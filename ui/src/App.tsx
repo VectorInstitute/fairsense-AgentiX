@@ -483,7 +483,7 @@ export default function App() {
                           const f = await createDemoImageFile(DEMO_IMAGE_SVGs[demo.key], `${demo.key}.png`);
                           setFile(f);
                         } catch (err) {
-                          setError(err instanceof Error ? err.message : "Failed to load demo image.");
+                          setErrorMessage(err instanceof Error ? err.message : "Failed to load demo image.");
                         }
                       }}
                       className="group overflow-hidden rounded-xl border border-slate-700 hover:border-accent-200/50 transition-colors text-left"
