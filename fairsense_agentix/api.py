@@ -31,18 +31,48 @@ Configuration is controlled via environment variables (see Settings docs):
 Per-request options can be passed to analysis methods (see options parameter docs).
 """
 
+import logging
 import time
+import warnings
 from pathlib import Path
 from typing import Any, Union
 
 # Import logging config for side effects (suppress verbose HTTP logs)
 from fairsense_agentix import logging_config  # noqa: F401
+from fairsense_agentix.configs import settings
 from fairsense_agentix.graphs.orchestrator_graph import create_orchestrator_graph
 from fairsense_agentix.schemas import BiasResult, ResultMetadata, RiskResult
 from fairsense_agentix.tools.llm.output_schemas import BiasAnalysisOutput
 
 
-__all__ = ["FairSense", "BiasResult", "ResultMetadata", "RiskResult"]
+__all__ = [
+    "FairSense",
+    "BiasResult",
+    "MockProviderWarning",
+    "ResultMetadata",
+    "RiskResult",
+]
+
+logger = logging.getLogger(__name__)
+
+MOCK_MODE_WARNING = (
+    "MOCK MODE: one or more tools are configured as 'fake' ({components}). "
+    "This result is a synthetic placeholder for testing, not a real analysis. "
+    "Set FAIRSENSE_LLM_PROVIDER (openai/anthropic) and FAIRSENSE_LLM_API_KEY "
+    "for real analysis."
+)
+
+
+class MockProviderWarning(RuntimeWarning):
+    """Emitted when FairSense is initialised with fake (mock) tools."""
+
+
+def _with_mock_warning(existing: list[str]) -> list[str]:
+    """Prepend a mock-mode notice to a result's warnings when fakes are active."""
+    if not settings.mock_mode:
+        return existing
+    notice = MOCK_MODE_WARNING.format(components=", ".join(settings.mock_components))
+    return [notice, *existing]
 
 
 # ============================================================================
@@ -130,6 +160,16 @@ class FairSense:
         # Tool registry already loaded at module import (see __init__.py)
         # Just create the orchestrator graph
         self._graph = create_orchestrator_graph()
+
+        # The default provider is "fake" so the package imports without an API
+        # key, but that also means FairSense() "works" out of the box while
+        # returning synthetic output. Say so loudly.
+        if settings.mock_mode:
+            notice = MOCK_MODE_WARNING.format(
+                components=", ".join(settings.mock_components),
+            )
+            logger.warning(notice)
+            warnings.warn(notice, MockProviderWarning, stacklevel=2)
 
     def analyze_text(
         self,
@@ -349,6 +389,9 @@ class FairSense:
             refinement_count=final["refinement_count"],
             preflight_score=final["metadata"].get("preflight_score"),
             posthoc_score=final["metadata"].get("posthoc_score"),
+            llm_provider=settings.llm_provider,
+            mock_mode=settings.mock_mode,
+            mock_components=settings.mock_components,
         )
 
         return BiasResult(
@@ -365,7 +408,7 @@ class FairSense:
             image_base64=output.get("image_base64"),
             metadata=metadata,
             errors=final["errors"],
-            warnings=final["warnings"],
+            warnings=_with_mock_warning(final["warnings"]),
         )
 
     def _build_risk_result(
@@ -387,6 +430,9 @@ class FairSense:
             refinement_count=final["refinement_count"],
             preflight_score=final["metadata"].get("preflight_score"),
             posthoc_score=final["metadata"].get("posthoc_score"),
+            llm_provider=settings.llm_provider,
+            mock_mode=settings.mock_mode,
+            mock_components=settings.mock_components,
         )
 
         return RiskResult(
@@ -398,5 +444,5 @@ class FairSense:
             csv_path=output.get("csv_path"),
             metadata=metadata,
             errors=final["errors"],
-            warnings=final["warnings"],
+            warnings=_with_mock_warning(final["warnings"]),
         )

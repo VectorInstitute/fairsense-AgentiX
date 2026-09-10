@@ -2,10 +2,17 @@
 
 Quick Start
 -----------
+Configure a real LLM provider first (otherwise the default ``fake`` provider
+returns synthetic placeholder results and emits a ``MockProviderWarning``)::
+
+    export FAIRSENSE_LLM_PROVIDER=openai
+    export FAIRSENSE_LLM_API_KEY=sk-...
+
     >>> from fairsense_agentix import FairSense
     >>> fs = FairSense()
     >>> result = fs.analyze_text("Job posting text")
     >>> print(result.bias_detected, result.risk_level)
+    >>> result.metadata.mock_mode  # False when using a real provider
 
 Advanced (full control):
 
@@ -22,6 +29,7 @@ from fairsense_agentix import server
 from fairsense_agentix.api import (
     BiasResult,
     FairSense,
+    MockProviderWarning,
     ResultMetadata,
     RiskResult,
 )
@@ -49,6 +57,7 @@ __all__ = [
     "BiasResult",
     "RiskResult",
     "ResultMetadata",
+    "MockProviderWarning",
     # Configuration
     "Settings",
     # Advanced

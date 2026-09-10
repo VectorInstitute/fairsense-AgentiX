@@ -38,6 +38,14 @@ class ResultMetadata(BaseModel):
         Pre-execution quality score (None if not evaluated, Phase 7+)
     posthoc_score : float | None
         Post-execution quality score (None if not evaluated, Phase 7+)
+    llm_provider : str
+        LLM provider that produced this result ("openai", "anthropic", "fake", ...)
+    mock_mode : bool
+        True when any tool was a ``fake`` implementation. Such results are
+        synthetic placeholders for testing and must not be interpreted as a
+        real analysis.
+    mock_components : list[str]
+        Which tools were fakes (e.g. ``["llm", "ocr"]``); empty when none
     """
 
     run_id: str = Field(description="Unique execution identifier for tracing")
@@ -61,6 +69,21 @@ class ResultMetadata(BaseModel):
         ge=0.0,
         le=1.0,
         description="Post-execution quality score (Phase 7+)",
+    )
+    llm_provider: str = Field(
+        "unknown",
+        description="LLM provider that produced this result",
+    )
+    mock_mode: bool = Field(
+        False,
+        description=(
+            "True when any tool was a fake implementation; the result is a "
+            "synthetic placeholder, not a real analysis"
+        ),
+    )
+    mock_components: list[str] = Field(
+        default_factory=list,
+        description="Tools that were fakes (e.g. ['llm']); empty when none",
     )
 
 

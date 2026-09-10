@@ -55,6 +55,16 @@ source .venv/bin/activate
 
 ## 🚀 Quick Start
 
+First point FairSense at a real LLM provider. The default provider is `fake` — it lets the
+package import and the tests run without an API key, but in that mode every result is a
+**synthetic placeholder**, not a real analysis (FairSense warns at construction, sets
+`result.metadata.mock_mode = True`, and prefixes `result.warnings` with `MOCK MODE`).
+
+```bash
+export FAIRSENSE_LLM_PROVIDER=openai   # or: anthropic
+export FAIRSENSE_LLM_API_KEY=sk-...
+```
+
 ```python
 from fairsense_agentix import FairSense
 
@@ -118,7 +128,8 @@ Endpoints (all under `/v1/...`):
 | `POST /analyze` | JSON payload with `content`, optional `input_type`, `options` |
 | `POST /analyze/upload` | `multipart/form-data` for images |
 | `POST /batch` & `GET /batch/{id}` | Submit + inspect batch jobs |
-| `GET /health` | Health probe |
+| `GET /health` | Health probe (reports `llm_provider` and `mock_mode`) |
+| `POST /shutdown` | Stop the server — disabled by default, see configuration below |
 | `WS /stream/{run_id}` | Stream telemetry/agent events for a run |
 
 The API auto-detects text/image/CSV inputs, but you can override by setting `input_type` to `bias_text`, `bias_image`, or `risk`.
@@ -144,10 +155,14 @@ Configure via environment variables (see `.env` for the full list). Most relevan
 
 | Variable | Description |
 | --- | --- |
-| `FAIRSENSE_LLM_PROVIDER` | `openai`, `anthropic`, or `fake` |
+| `FAIRSENSE_LLM_PROVIDER` | `openai`, `anthropic`, or `fake` (mock mode — synthetic results, testing only) |
 | `FAIRSENSE_LLM_MODEL_NAME` | e.g. `gpt-4`, `claude-3-5-sonnet` |
 | `FAIRSENSE_LLM_API_KEY` | Provider API key |
 | `FAIRSENSE_OCR_TOOL` | `auto`, `tesseract`, `paddleocr`, `fake` |
+| `FAIRSENSE_API_HOST` | Bind address (default `127.0.0.1`; set `0.0.0.0` to expose, e.g. in a container) |
+| `FAIRSENSE_API_CORS_ORIGINS` | Allowed CORS origins (default: local Vite dev server; `["*"]` to allow any) |
+| `FAIRSENSE_API_ENABLE_SHUTDOWN_ENDPOINT` | Expose `POST /v1/shutdown` (default `false`; the launcher enables it) |
+| `FAIRSENSE_API_SHUTDOWN_TOKEN` | Secret for `X-Shutdown-Token`; without it shutdown is loopback-only |
 | `FAIRSENSE_CAPTION_MODEL` | `auto`, `blip2`, `blip`, `fake` |
 | `FAIRSENSE_ENABLE_REFINEMENT` | enables evaluator-driven retries (default `true`) |
 | `FAIRSENSE_EVALUATOR_ENABLED` | toggles Phase 7 evaluators |
