@@ -91,6 +91,9 @@ Execution metadata included in all results.
         - refinement_count
         - preflight_score
         - posthoc_score
+        - llm_provider
+        - mock_mode
+        - mock_components
       heading_level: 5
 
 ---
@@ -120,9 +123,14 @@ Check if the server is ready to accept requests.
 **Response:**
 ```json
 {
-  "status": "ok"
+  "status": "ok",
+  "llm_provider": "openai",
+  "mock_mode": false
 }
 ```
+
+`mock_mode` is `true` when the server runs with `FAIRSENSE_LLM_PROVIDER=fake`; every
+analysis result is then a synthetic placeholder and the UI shows a warning banner.
 
 **cURL Example:**
 ```bash
@@ -370,9 +378,18 @@ curl http://localhost:8000/v1/batch/$JOB_ID | jq '.results'
 
 #### Shutdown Server
 
-Gracefully shutdown the backend server (used by UI shutdown button).
+Gracefully shutdown the backend server (used by the UI shutdown button).
 
 **Endpoint:** `POST /v1/shutdown`
+
+The endpoint is **disabled by default** and returns `404` unless
+`FAIRSENSE_API_ENABLE_SHUTDOWN_ENDPOINT=true`. The server launcher
+(`fairsense_agentix.server`) sets this for the local backend it manages. When enabled:
+
+- If `FAIRSENSE_API_SHUTDOWN_TOKEN` is set, the request must carry a matching
+  `X-Shutdown-Token` header (otherwise `403`).
+- If no token is set, only loopback clients (`127.0.0.1` / `::1`) may shut the
+  server down; remote callers get `403`.
 
 **Response:**
 ```json
@@ -384,7 +401,8 @@ Gracefully shutdown the backend server (used by UI shutdown button).
 
 **cURL Example:**
 ```bash
-curl -X POST http://localhost:8000/v1/shutdown
+curl -X POST http://localhost:8000/v1/shutdown \
+  -H "X-Shutdown-Token: $FAIRSENSE_API_SHUTDOWN_TOKEN"
 ```
 
 ---

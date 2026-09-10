@@ -522,9 +522,12 @@ FAIRSENSE_CACHE_ENABLED=true
 FAIRSENSE_CACHE_TTL_SECONDS=3600
 
 # === Server Settings ===
-FAIRSENSE_API_HOST=0.0.0.0
+FAIRSENSE_API_HOST=127.0.0.1              # 0.0.0.0 to expose (e.g. in a container)
 FAIRSENSE_API_PORT=8000
 FAIRSENSE_API_RELOAD=false
+FAIRSENSE_API_CORS_ORIGINS=http://localhost:5173,http://127.0.0.1:5173
+FAIRSENSE_API_ENABLE_SHUTDOWN_ENDPOINT=false
+# FAIRSENSE_API_SHUTDOWN_TOKEN=change-me  # required for remote /v1/shutdown
 ```
 
 ### Programmatic Configuration

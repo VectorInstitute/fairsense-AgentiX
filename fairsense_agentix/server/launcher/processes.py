@@ -44,6 +44,10 @@ def start_backend(port: int, *, reload: bool, verbose: bool) -> subprocess.Popen
     env = os.environ.copy()
     env["FAIRSENSE_API_PORT"] = str(port)
     env["FAIRSENSE_API_RELOAD"] = "true" if reload else "false"
+    # The bundled UI has a "stop server" button. The endpoint is off by default
+    # and, without a token, only accepts loopback clients — so this is safe for
+    # the local launcher but never exposed by a plain `uvicorn` deployment.
+    env.setdefault("FAIRSENSE_API_ENABLE_SHUTDOWN_ENDPOINT", "true")
 
     # CRITICAL: Re-enable eager loading for backend subprocess.
     # The parent process has FAIRSENSE_DISABLE_EAGER_LOADING=true
