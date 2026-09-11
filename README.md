@@ -55,10 +55,7 @@ source .venv/bin/activate
 
 ## 🚀 Quick Start
 
-First point FairSense at a real LLM provider. The default provider is `fake` — it lets the
-package import and the tests run without an API key, but in that mode every result is a
-**synthetic placeholder**, not a real analysis (FairSense warns at construction, sets
-`result.metadata.mock_mode = True`, and prefixes `result.warnings` with `MOCK MODE`).
+First point FairSense at a real LLM provider. The default provider is `fake` — it lets the package import and the tests run without an API key, but in that mode every result is a **synthetic placeholder**, not a real analysis (FairSense warns at construction, sets `result.metadata.mock_mode = True`, and prefixes `result.warnings` with `MOCK MODE`).
 
 ```bash
 export FAIRSENSE_LLM_PROVIDER=openai   # or: anthropic
@@ -118,7 +115,8 @@ uv sync --no-group docs
 ### Run the FastAPI service
 
 ```bash
-uv run uvicorn fairsense_agentix.service_api.server:app --reload
+python -m fairsense_agentix.service_api          # honours FAIRSENSE_API_HOST / PORT
+# or: uv run uvicorn fairsense_agentix.service_api.server:app --host 127.0.0.1 --reload
 ```
 
 Endpoints (all under `/v1/...`):
@@ -136,11 +134,15 @@ The API auto-detects text/image/CSV inputs, but you can override by setting `inp
 
 ### Run the Claude-inspired UI
 
+The UI lives in `ui/` in this repository (it is not part of the PyPI wheel) and needs Node.js:
+
 ```bash
 cd ui
 npm install
 npm run dev
 ```
+
+Or start backend + UI together from the checkout with `python -c "from fairsense_agentix import server; server.start()"`.
 
 Set `VITE_API_BASE` (defaults to `http://localhost:8000`) to point at the API. The UI provides:
 
@@ -158,6 +160,7 @@ Configure via environment variables (see `.env` for the full list). Most relevan
 | `FAIRSENSE_LLM_PROVIDER` | `openai`, `anthropic`, or `fake` (mock mode — synthetic results, testing only) |
 | `FAIRSENSE_LLM_MODEL_NAME` | e.g. `gpt-4`, `claude-3-5-sonnet` |
 | `FAIRSENSE_LLM_API_KEY` | Provider API key |
+| `FAIRSENSE_LLM_BASE_URL` | Endpoint override for `openai` — point at an OpenAI-compatible server such as Ollama (`http://localhost:11434/v1`) |
 | `FAIRSENSE_OCR_TOOL` | `auto`, `tesseract`, `paddleocr`, `fake` |
 | `FAIRSENSE_API_HOST` | Bind address (default `127.0.0.1`; set `0.0.0.0` to expose, e.g. in a container) |
 | `FAIRSENSE_API_CORS_ORIGINS` | Allowed CORS origins (default: local Vite dev server; `["*"]` to allow any) |

@@ -102,12 +102,7 @@ python -c "from fairsense_agentix import FairSense; print('✅ Installation succ
 ## Your First Analysis
 
 !!! warning "Configure a real LLM provider first"
-    The default `FAIRSENSE_LLM_PROVIDER` is `fake`, which lets the package import and the
-    test suite run without an API key. In that mode `FairSense()` still "works" but every
-    result is a **synthetic placeholder**, not a real analysis. FairSense flags this in three
-    places: a `MockProviderWarning` at construction, `result.metadata.mock_mode == True`,
-    and a `MOCK MODE` entry at the top of `result.warnings`. Set a real provider before
-    running the examples below:
+    The default `FAIRSENSE_LLM_PROVIDER` is `fake`, which lets the package import and the test suite run without an API key. In that mode `FairSense()` still "works" but every result is a **synthetic placeholder**, not a real analysis. FairSense flags this in three places: a `MockProviderWarning` at construction, `result.metadata.mock_mode == True`, and a `MOCK MODE` entry at the top of `result.warnings`. Set a real provider before running the examples below:
 
     ```bash
     export FAIRSENSE_LLM_PROVIDER=openai        # or: anthropic
@@ -244,6 +239,9 @@ for risk in result.risks[:5]:  # Show top 5
 
 The easiest way to use FairSense is through the integrated web UI:
 
+!!! note "Source checkout vs. `pip install`"
+    The React UI lives in `ui/` in the git repository and is **not** included in the PyPI wheel. From a `pip install fairsense-agentix` environment, `server.start()` runs the backend only (it prints a notice and the API docs URL); to use the web UI, clone the repository and install Node.js. `server.start(ui=False)` requests backend-only mode explicitly.
+
 ### Launch the Server
 
 **Option 1: Python Script**
@@ -272,12 +270,20 @@ uv run python -c "from fairsense_agentix import server; server.start()"
 from fairsense_agentix import server
 
 server.start(
-    port=9000,           # Backend API port
-    ui_port=3000,        # Frontend UI port
-    open_browser=True,   # Auto-open browser
-    verbose=True         # Show server logs
+    port=9000,             # Backend API port
+    ui_port=3000,          # Frontend UI port
+    open_browser=True,     # Auto-open browser
+    verbose=True,          # Show server logs
+    frontend_timeout=120,  # Seconds to wait for Vite (raise on slow/network filesystems)
 )
 ```
+
+**Option 4: Backend only (no Node.js required)**
+```bash
+python -m fairsense_agentix.service_api
+# equivalent to: server.start(ui=False)
+```
+This reads `FAIRSENSE_API_HOST` / `FAIRSENSE_API_PORT` from the environment; the plain `uvicorn` CLI does not, so pass `--host`/`--port` explicitly if you use it directly.
 
 ### What the Server Provides
 
@@ -340,11 +346,15 @@ FAIRSENSE_LLM_PROVIDER=openai
 FAIRSENSE_LLM_MODEL_NAME=gpt-4
 FAIRSENSE_LLM_API_KEY=sk-...
 
-# Use local model (requires Ollama)
+# Use a local model through any OpenAI-compatible server (Ollama, vLLM, LM Studio)
 FAIRSENSE_LLM_PROVIDER=openai
-FAIRSENSE_LLM_BASE_URL=http://localhost:11434/v1
-FAIRSENSE_LLM_MODEL_NAME=llama2
+FAIRSENSE_LLM_BASE_URL=http://localhost:11434/v1   # Ollama's OpenAI-compatible endpoint
+FAIRSENSE_LLM_MODEL_NAME=llama3.1                   # a model you have pulled: `ollama pull llama3.1`
+FAIRSENSE_LLM_API_KEY=ollama                        # required to be non-empty; Ollama ignores it
 ```
+
+!!! note "Local models"
+    `FAIRSENSE_LLM_PROVIDER=local` is reserved and currently raises `ToolConfigurationError` ("not yet implemented"). Use the `openai` provider with `FAIRSENSE_LLM_BASE_URL` as above instead. Bias analysis relies on structured (tool-call) output, so choose a model that supports it — with Ollama that means a tool-capable model such as `llama3.1` or `qwen2.5`. Image analysis in the default `vlm` mode additionally needs a vision-capable model; otherwise set `FAIRSENSE_IMAGE_ANALYSIS_MODE=traditional` (OCR + captioning run locally).
 
 ### Tool Configuration
 

@@ -181,6 +181,7 @@ class UnifiedVLMTool:
                     else None
                 ),
                 timeout=self.settings.llm_timeout_seconds,
+                base_url=self.settings.llm_base_url,
             )
 
             logger.info(

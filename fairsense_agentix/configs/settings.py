@@ -36,6 +36,8 @@ class Settings(BaseSettings):
         Specific model identifier
     llm_api_key : str | None
         API key for the LLM provider
+    llm_base_url : str | None
+        Endpoint override for OpenAI-compatible servers (Ollama, vLLM, ...)
     llm_temperature : float
         Sampling temperature for LLM calls (0.0-1.0)
     llm_max_tokens : int
@@ -140,6 +142,16 @@ class Settings(BaseSettings):
     llm_api_key: str | None = Field(
         default=None,
         description="API key for the LLM provider",
+    )
+
+    llm_base_url: str | None = Field(
+        default=None,
+        description=(
+            "Override the API endpoint for the openai provider. Lets any "
+            "OpenAI-compatible server (Ollama, vLLM, LM Studio, ...) act as the "
+            "LLM backend, e.g. http://localhost:11434/v1 for Ollama. Ignored by "
+            "other providers."
+        ),
     )
 
     llm_temperature: float = Field(

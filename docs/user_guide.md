@@ -334,10 +334,30 @@ Each item in `result.risks` is a `dict`. Use `.get(...)` for safe access since k
 
 | Key | Type | Description |
 |-----|------|-------------|
-| `id` or `risk_id` | `str` | Risk identifier from the source repository |
-| `description` or `text` | `str` | Full risk description |
-| `category` | `str` | Domain taxonomy label (e.g., `3.1 AI system safety failures`) |
+| `id` | `str` | Risk identifier from the source repository (e.g. `RISK0669`) |
+| `risk_name` | `str` | Short risk title from the repository |
+| `description` | `str` | Full risk description (`text` holds the same value) |
+| `category` | `str` | Domain taxonomy label, `"<domain>.<subdomain> > <name>"` (e.g. `1.1 > Unfair discrimination and misrepresentation`) |
+| `severity` | `str` | `LOW`, `MEDIUM`, or `HIGH` |
 | `score` | `float` | Relevance score (0–1) — FAISS semantic similarity to the query |
+| `rank` | `int` | Position in the retrieved list (0 = most relevant) |
+
+**`rmf_recommendations` values:**
+
+`result.rmf_recommendations` maps each risk `id` to a list of recommendation dicts:
+
+| Key | Type | Description |
+|-----|------|-------------|
+| `id` | `str` | Recommendation identifier (e.g. `RMF0027`) |
+| `risk_id` | `str` | Risk the recommendation was authored for |
+| `function` | `str` | NIST AI RMF core function: `GOVERN`, `MAP`, `MEASURE`, or `MANAGE` |
+| `action` | `str` | Recommended action (`text` holds the same value) |
+| `priority` | `str` | `LOW`, `MEDIUM`, or `HIGH` |
+| `score` | `float` | Similarity between the risk description and the recommendation |
+| `rank` | `int` | Position within the list for that risk |
+
+!!! note "What the recommendations are"
+    The recommendations are **not** text extracted from the NIST AI RMF and carry no NIST control identifiers. They are a curated set of action templates, assigned to each repository risk by its domain and mapped onto the four RMF functions, then indexed for retrieval. See `scripts/transform_mit_data.py` for how they are built.
 
 !!! note "Risk source"
     Risks are retrieved from the [MIT AI Risk Repository](https://airisk.mit.edu/) (V3, 1,340 entries) using semantic similarity search. The `category` field follows the repository's Domain Taxonomy; the number prefix (e.g., `3.1`) identifies the domain and subcategory. A score of `1.0` means the risk is maximally relevant to the described scenario; `0.0` means unrelated.
@@ -365,9 +385,9 @@ indicates whether the loan was historically approved (1) or denied (0).
 
 result = engine.assess_risk(context + "\n\n" + csv_data)
 
-# Check for fairness risks
-fairness_risks = [r for r in result.risks if r.get("category") == "fairness"]
-print(f"Found {len(fairness_risks)} fairness concerns")
+# Check for discrimination risks (repository domain 1 = "Discrimination & toxicity")
+fairness_risks = [r for r in result.risks if r["category"].startswith("1.")]
+print(f"Found {len(fairness_risks)} discrimination-related concerns")
 ```
 
 ### Common Use Cases
@@ -395,20 +415,18 @@ if critical:
         print(f"  • [{risk_id}]: {description}")
 ```
 
-#### Compliance Check
+#### Governance Actions per Risk
 
 ```python
-# Check against regulatory frameworks
 result = engine.assess_risk(scenario)
 
-# Filter by compliance category
-compliance_risks = [r for r in result.risks if r.get("category") == "compliance"]
-
-for risk in compliance_risks:
-    risk_id = risk.get("id") or risk.get("risk_id", "")
-    description = risk.get("description") or risk.get("text", "")
-    print(f"\n⚖️  [{risk_id}] (score: {risk.get('score', 0):.2f})")
-    print(f"   {description}")
+# For each retrieved risk, list the GOVERN-function recommendations
+for risk in result.risks:
+    recs = result.rmf_recommendations.get(risk["id"], [])
+    govern = [rec for rec in recs if rec["function"] == "GOVERN"]
+    print(f"\n⚖️  [{risk['id']}] {risk['risk_name']} (score: {risk['score']:.2f})")
+    for rec in govern:
+        print(f"   - ({rec['priority']}) {rec['action']}")
 ```
 
 #### Vendor Assessment
@@ -532,23 +550,22 @@ FAIRSENSE_API_ENABLE_SHUTDOWN_ENDPOINT=false
 
 ### Programmatic Configuration
 
-Override settings in code:
+Settings are read from the environment (and `.env`) **once, when `fairsense_agentix` is first imported**, into a module-level singleton that the tool registry and every workflow share. `FairSense()` takes no arguments; to configure it from code, set the environment variables *before* the import:
 
 ```python
-from fairsense_agentix import FairSense
-from fairsense_agentix.configs.settings import Settings
+import os
 
-# Create custom settings
-settings = Settings(
-    llm_provider="anthropic",
-    llm_model_name="claude-3-5-sonnet-20241022",
-    enable_refinement=False,  # Faster but lower quality
-    max_refinement_iterations=1
-)
+os.environ["FAIRSENSE_LLM_PROVIDER"] = "anthropic"
+os.environ["FAIRSENSE_LLM_MODEL_NAME"] = "claude-3-5-sonnet-20241022"
+os.environ["FAIRSENSE_LLM_API_KEY"] = "sk-ant-..."
+os.environ["FAIRSENSE_ENABLE_REFINEMENT"] = "false"  # faster, no critique pass
 
-# Initialize engine with custom settings
-engine = FairSense(settings=settings)
+from fairsense_agentix import FairSense  # noqa: E402  (import after configuring)
+
+engine = FairSense()
 ```
+
+`Settings()` can still be instantiated directly (e.g. to validate a configuration or inspect defaults), but a new instance is not picked up by an existing engine.
 
 ### Per-Analysis Options
 
@@ -702,12 +719,16 @@ async def stream_analysis():
         async for message in websocket:
             event = json.loads(message)
 
-            print(f"[{event['event']}] {event['context'].get('message', '')}")
+            print(f"[{event['level']}] {event['event']} {event['context']}")
 
-            # Check for completion
+            # Check for completion (result is the full AnalyzeResponse)
             if event["event"] == "analysis_complete":
                 result = event["context"]["result"]
-                print(f"\n✅ Complete: {result['summary']}")
+                bias = result["bias_result"]
+                print(f"\n✅ Complete: {bias['summary']}")
+                break
+            if event["event"] == "analysis_error":
+                print(f"\n❌ Failed: {event['context']['message']}")
                 break
 
 asyncio.run(stream_analysis())
@@ -745,15 +766,11 @@ result = engine.analyze_text(
 
 ### 2. Cache Results
 
-```python
-# Enable caching to avoid re-analyzing identical content
-from fairsense_agentix.configs.settings import Settings
+LLM responses are cached in SQLite (`FAIRSENSE_LLM_CACHE_ENABLED=true`, the default), so re-analysing identical content does not spend API calls:
 
-settings = Settings(
-    cache_enabled=True,
-    cache_ttl_seconds=3600  # 1 hour
-)
-engine = FairSense(settings=settings)
+```bash
+FAIRSENSE_LLM_CACHE_ENABLED=true
+FAIRSENSE_LLM_CACHE_PATH=.cache/langchain.db
 ```
 
 ### 3. Handle Errors Gracefully
@@ -841,16 +858,15 @@ result = engine.analyze_text(text, enable_refinement=False)
 **Cause:** Too many LLM API calls
 
 **Solution:**
-```python
-# Enable caching to reduce API calls
-settings = Settings(cache_enabled=True)
-engine = FairSense(settings=settings)
+```bash
+# Keep the LLM response cache on (default) so repeated inputs are not re-sent
+FAIRSENSE_LLM_CACHE_ENABLED=true
 
-# Or use a local model
-settings = Settings(
-    llm_provider="openai",
-    llm_base_url="http://localhost:11434/v1"
-)
+# Or run against a local OpenAI-compatible server (Ollama, vLLM, ...)
+FAIRSENSE_LLM_PROVIDER=openai
+FAIRSENSE_LLM_BASE_URL=http://localhost:11434/v1
+FAIRSENSE_LLM_MODEL_NAME=llama3.1
+FAIRSENSE_LLM_API_KEY=ollama
 ```
 
 ---
