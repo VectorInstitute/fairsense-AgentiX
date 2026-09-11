@@ -129,8 +129,7 @@ Check if the server is ready to accept requests.
 }
 ```
 
-`mock_mode` is `true` when the server runs with `FAIRSENSE_LLM_PROVIDER=fake`; every
-analysis result is then a synthetic placeholder and the UI shows a warning banner.
+`mock_mode` is `true` when the server runs with `FAIRSENSE_LLM_PROVIDER=fake`; every analysis result is then a synthetic placeholder and the UI shows a warning banner.
 
 **cURL Example:**
 ```bash
@@ -382,14 +381,10 @@ Gracefully shutdown the backend server (used by the UI shutdown button).
 
 **Endpoint:** `POST /v1/shutdown`
 
-The endpoint is **disabled by default** and returns `404` unless
-`FAIRSENSE_API_ENABLE_SHUTDOWN_ENDPOINT=true`. The server launcher
-(`fairsense_agentix.server`) sets this for the local backend it manages. When enabled:
+The endpoint is **disabled by default** and returns `404` unless `FAIRSENSE_API_ENABLE_SHUTDOWN_ENDPOINT=true`. The server launcher (`fairsense_agentix.server`) sets this for the local backend it manages. When enabled:
 
-- If `FAIRSENSE_API_SHUTDOWN_TOKEN` is set, the request must carry a matching
-  `X-Shutdown-Token` header (otherwise `403`).
-- If no token is set, only loopback clients (`127.0.0.1` / `::1`) may shut the
-  server down; remote callers get `403`.
+- If `FAIRSENSE_API_SHUTDOWN_TOKEN` is set, the request must carry a matching `X-Shutdown-Token` header (otherwise `403`).
+- If no token is set, only loopback clients (`127.0.0.1` / `::1`) may shut the server down; remote callers get `403`.
 
 **Response:**
 ```json
@@ -423,51 +418,61 @@ Connect to this WebSocket **after** calling `/v1/analyze/start` to receive live 
 
 ### Event Structure
 
-All events follow this JSON structure:
+Every message is the JSON telemetry payload emitted by the agent, forwarded to the client whose `run_id` it carries:
 
 ```json
 {
   "run_id": "a1b2c3d4-...",
   "timestamp": 1234567890.123,
-  "event": "event_name",
-  "level": "info",  // "info" | "warning" | "error"
+  "event": "bias_text_analyze_start",
+  "level": "info",
   "context": {
-    "message": "Human-readable event description",
-    "phase": "planning",  // Current workflow phase
-    // ... additional event-specific fields
+    "text_length": 128
   }
 }
 ```
+
+`level` is `"info"`, `"warning"`, or `"error"`. `context` holds the structured fields the emitting node attached; there is no fixed schema beyond the event names below. There is no separate `message` field except on the two terminal events.
 
 ---
 
 ### Event Types
 
-#### Workflow Events
+Node events are emitted by the orchestrator and the workflow subgraphs as each node begins. Only events that carry the run ID are streamed, so clients see one `*_start` event per node in execution order.
 
-| Event | Description | Context Fields |
-|-------|-------------|----------------|
-| `workflow_start` | Analysis begins | `input_type`, `workflow_id` |
-| `phase_transition` | Agent moves to new phase | `from_phase`, `to_phase`, `phase_number` |
-| `tool_call_start` | Tool execution begins | `tool_name`, `inputs` |
-| `tool_call_end` | Tool execution completes | `tool_name`, `outputs`, `duration_ms` |
-| `llm_call_start` | LLM request begins | `model`, `temperature`, `max_tokens` |
-| `llm_call_end` | LLM response received | `model`, `tokens_used`, `duration_ms` |
-| `refinement_start` | Refinement iteration begins | `iteration_number`, `reason` |
-| `refinement_end` | Refinement iteration completes | `iteration_number`, `improved` |
-| `analysis_complete` | Analysis finished successfully | `result` (full result object) |
-| `analysis_error` | Analysis failed | `error_type`, `error_message` |
+#### Orchestrator events (every workflow)
 
-#### Phase Events
+| Event | Context fields |
+|-------|----------------|
+| `orchestrator_plan_start` | `input_type`, `refinement_count` |
+| `orchestrator_preflight_start` | `has_plan` |
+| `orchestrator_execute_start` | `workflow_id` |
+| `orchestrator_posthoc_start` | `has_result` |
+| `orchestrator_decide_start` | `refinement_count`, `refinement_enabled` |
+| `orchestrator_refine_start` | `current_refinement_count` (only when a refinement pass is triggered) |
+| `orchestrator_finalize_start` | `decision`, `refinement_count` |
 
-| Phase | Event Name | Description |
-|-------|------------|-------------|
-| Planning | `phase_planning` | Agent planning analysis strategy |
-| Tool Selection | `phase_tool_selection` | Selecting appropriate tools |
-| Tool Execution | `phase_tool_execution` | Running OCR, captioning, embeddings |
-| Evidence Synthesis | `phase_synthesis` | Combining tool outputs |
-| Evaluation | `phase_evaluation` | Quality assessment |
-| Refinement | `phase_refinement` | Iterative improvement |
+#### Workflow events
+
+| Workflow | Events (in order) |
+|----------|-------------------|
+| `bias_text` | `bias_text_analyze_start` (`text_length`), `bias_text_summarize_start`*, `bias_text_highlight_start` |
+| `bias_image_vlm` (default image mode) | `bias_image_vlm_analyze_start` (`image_size`, `model`, `provider`), `bias_image_vlm_summarize_start`, `bias_image_vlm_highlight_start` |
+| `bias_image` (`FAIRSENSE_IMAGE_ANALYSIS_MODE=traditional`) | `bias_image_ocr_start`, `bias_image_caption_start`, `bias_image_merge_start`, `bias_image_analyze_start`, `bias_image_summarize_start`*, `bias_image_highlight_start` |
+| `risk` | `risk_embed_start` (`text_length`), `risk_search_start`, `risk_rmf_search_start` (`risk_count`), `risk_join_start` (`risk_count`), `risk_format_start` (`table_rows`), `risk_export_start` (`table_rows`), then `risk_evaluator_start` (`workflow_id`) during post-hoc evaluation |
+
+\* summarisation runs only when the input is long enough (router-controlled).
+
+Warnings and errors raised inside nodes are streamed with the same envelope and `level` set accordingly (e.g. `posthoc_eval_failed`, `search_rmf_skipped`).
+
+#### Terminal events (emitted by the service layer)
+
+| Event | Level | Context fields |
+|-------|-------|----------------|
+| `analysis_complete` | `info` | `message`, `result` — the full `AnalyzeResponse` (`workflow_id`, `run_id`, `bias_result` or `risk_result`, `metadata`) |
+| `analysis_error` | `error` | `message`, `error_type` |
+
+Exactly one of these ends every run started via `/v1/analyze/start` or `/v1/analyze/upload/start`.
 
 ---
 
@@ -494,22 +499,22 @@ All events follow this JSON structure:
    async for message in ws:
        event = json.loads(message)
 
-       # Handle different event types
-       if event["event"] == "tool_call_start":
-           print(f"Running {event['context']['tool_name']}...")
+       if event["event"] == "orchestrator_execute_start":
+           print(f"Running workflow {event['context']['workflow_id']}...")
 
        elif event["event"] == "analysis_complete":
            result = event["context"]["result"]
            break  # Analysis done
 
        elif event["event"] == "analysis_error":
-           print(f"Error: {event['context']['error_message']}")
+           print(f"Error: {event['context']['message']}")
            break
    ```
 
 4. **Disconnection:**
-   - WebSocket closes automatically after `analysis_complete` or `analysis_error`
-   - Client can disconnect early without affecting analysis
+   - The server keeps the socket open; **the client should close it** after receiving `analysis_complete` or `analysis_error`.
+   - Events are buffered per `run_id` (up to 200, oldest dropped), so connecting shortly after `/start` returns does not lose the early events.
+   - Disconnecting early does not cancel the analysis; the final result is still stored and returned by `/v1/analyze/start`'s background task.
 
 ---
 
@@ -543,55 +548,37 @@ async def stream_analysis():
             event = json.loads(message)
 
             # Format event for display
-            timestamp = event["timestamp"]
             event_type = event["event"]
             level = event["level"]
-            msg = event["context"].get("message", "")
+            ctx = event["context"]
 
             # Pretty print based on event type
-            if event_type == "workflow_start":
-                print(f"🚀 [{level}] Workflow started: {msg}")
+            if event_type == "orchestrator_plan_start":
+                print(f"🧭 [{level}] Planning ({ctx['input_type']})")
 
-            elif event_type == "phase_transition":
-                phase = event["context"]["to_phase"]
-                print(f"📍 [{level}] Phase: {phase}")
+            elif event_type == "orchestrator_execute_start":
+                print(f"🚀 [{level}] Executing workflow: {ctx['workflow_id']}")
 
-            elif event_type == "tool_call_start":
-                tool = event["context"]["tool_name"]
-                print(f"🔧 [{level}] Running tool: {tool}")
-
-            elif event_type == "tool_call_end":
-                tool = event["context"]["tool_name"]
-                duration = event["context"]["duration_ms"]
-                print(f"✅ [{level}] {tool} completed ({duration}ms)")
-
-            elif event_type == "llm_call_start":
-                model = event["context"]["model"]
-                print(f"🤖 [{level}] LLM call: {model}")
-
-            elif event_type == "llm_call_end":
-                tokens = event["context"]["tokens_used"]
-                print(f"✅ [{level}] LLM response ({tokens} tokens)")
-
-            elif event_type == "refinement_start":
-                iteration = event["context"]["iteration_number"]
-                print(f"🔄 [{level}] Refinement iteration {iteration}")
+            elif event_type == "orchestrator_refine_start":
+                print(f"🔄 [{level}] Refinement pass {ctx['current_refinement_count'] + 1}")
 
             elif event_type == "analysis_complete":
-                result = event["context"]["result"]
+                result = ctx["result"]
                 print(f"\n✅ [{level}] Analysis complete!")
-                print(f"Bias detected: {result['bias_result']['bias_detected']}")
-                print(f"Risk level: {result['bias_result']['risk_level']}")
+                if result["bias_result"]:
+                    print(f"Bias detected: {result['bias_result']['bias_detected']}")
+                    print(f"Risk level: {result['bias_result']['risk_level']}")
+                else:
+                    print(f"Risks found: {len(result['risk_result']['risks'])}")
                 break
 
             elif event_type == "analysis_error":
-                error = event["context"]["error_message"]
-                print(f"\n❌ [{level}] Analysis failed: {error}")
+                print(f"\n❌ [{level}] Analysis failed: {ctx['message']}")
                 break
 
             else:
-                # Generic event
-                print(f"📋 [{level}] {event_type}: {msg}")
+                # Node-level event (bias_text_analyze_start, risk_embed_start, ...)
+                print(f"📋 [{level}] {event_type} {ctx}")
 
 
 # Run the streaming example
@@ -651,9 +638,8 @@ When analysis fails, you'll receive an `analysis_error` event:
   "event": "analysis_error",
   "level": "error",
   "context": {
-    "message": "Analysis failed: Tool execution error",
-    "error_type": "ToolExecutionError",
-    "error_message": "OCR tool failed: Tesseract not found"
+    "message": "Analysis failed: OCR tool failed: Tesseract not found",
+    "error_type": "ToolExecutionError"
   }
 }
 ```

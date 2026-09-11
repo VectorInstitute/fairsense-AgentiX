@@ -11,6 +11,7 @@ from typing import Optional
 from fairsense_agentix.logging_config import ensure_root_logging
 from fairsense_agentix.server.launcher.health import wait_for_backend, wait_for_frontend
 from fairsense_agentix.server.launcher.messages import (
+    print_backend_only_notice,
     print_backend_troubleshooting,
     print_banner,
     print_frontend_troubleshooting,
@@ -18,6 +19,7 @@ from fairsense_agentix.server.launcher.messages import (
     print_ready_message,
 )
 from fairsense_agentix.server.launcher.processes import (
+    find_ui_dir,
     kill_port,
     start_backend,
     start_frontend,
@@ -51,6 +53,12 @@ class ServerLauncher:
         Stream backend/frontend logs to stdout (False = status only)
     reload : bool, default=False
         Enable uvicorn auto-reload (for prompt/config customization)
+    ui : bool, default=True
+        Also start the React UI. Automatically disabled (with a notice) when
+        the ``ui/`` source directory is not present, e.g. for a PyPI install.
+    frontend_timeout : int, default=60
+        Seconds to wait for the Vite dev server to answer before giving up.
+        Cold starts on network filesystems can take longer than the default.
 
     Examples
     --------
@@ -59,13 +67,15 @@ class ServerLauncher:
     >>> launcher.wait()  # Blocks until Ctrl+C
     """
 
-    def __init__(
+    def __init__(  # noqa: PLR0913 -- mirrors the public start() options
         self,
         backend_port: int = 8000,
         frontend_port: int = 5173,
         open_browser: bool = True,
         verbose: bool = True,
         reload: bool = False,
+        ui: bool = True,
+        frontend_timeout: int = 60,
     ) -> None:
         """Initialize launcher with configuration."""
         self.backend_port = backend_port
@@ -73,6 +83,8 @@ class ServerLauncher:
         self.open_browser = open_browser
         self.verbose = verbose
         self.reload = reload
+        self.ui = ui
+        self.frontend_timeout = frontend_timeout
 
         # So logger.debug() from _log_debug() is emitted when verbose=True
         # (parent logger is INFO)
@@ -99,29 +111,34 @@ class ServerLauncher:
         self.stop()
         sys.exit(0)
 
-    def start(self) -> tuple[subprocess.Popen, subprocess.Popen]:
-        """Start both backend and frontend servers.
+    def start(self) -> tuple[subprocess.Popen, Optional[subprocess.Popen]]:
+        """Start the backend and, when the UI source is available, the frontend.
+
+        The React UI lives in ``ui/`` at the repository root and is not part of
+        the published wheel. From a PyPI install the launcher therefore runs in
+        backend-only mode and says so, instead of failing.
 
         Returns
         -------
-        tuple[subprocess.Popen, subprocess.Popen]
-            Backend and frontend process handles
-
-        Raises
-        ------
-        RuntimeError
-            If either server fails to start
-        FileNotFoundError
-            If npm or UI directory not found
+        tuple[subprocess.Popen, subprocess.Popen | None]
+            Backend process handle, and frontend handle (``None`` in
+            backend-only mode)
         """
         print_banner()
         self._start_backend_with_health_check()
-        self._start_frontend_with_health_check()
-        self._open_browser_if_enabled()
-        print_ready_message(self.backend_port, self.frontend_port)
+
+        if self.ui and find_ui_dir() is None:
+            print_backend_only_notice(self.backend_port)
+            self.ui = False
+
+        if self.ui:
+            self._start_frontend_with_health_check()
+            self._open_browser_if_enabled()
+            print_ready_message(self.backend_port, self.frontend_port)
+        else:
+            print_ready_message(self.backend_port, None)
 
         assert self.backend_proc is not None, "Backend process must be set"
-        assert self.frontend_proc is not None, "Frontend process must be set"
         return self.backend_proc, self.frontend_proc
 
     def _start_backend_with_health_check(self) -> None:
@@ -172,8 +189,11 @@ class ServerLauncher:
             self.stop()
             sys.exit(1)
 
-        logger.info("⏳ Waiting for frontend to be ready...")
-        if not wait_for_frontend(self.frontend_port):
+        logger.info(
+            "⏳ Waiting for frontend to be ready (up to %ss)...",
+            self.frontend_timeout,
+        )
+        if not wait_for_frontend(self.frontend_port, timeout=self.frontend_timeout):
             print_frontend_troubleshooting(self.frontend_port)
             self.stop()
             sys.exit(1)
@@ -245,17 +265,20 @@ class ServerLauncher:
             self.stop()
 
 
-def start(
+def start(  # noqa: PLR0913 -- one keyword per user-facing option
     port: int = 8000,
     ui_port: int = 5173,
     open_browser: bool = True,
     verbose: bool = True,
     reload: bool = False,
+    ui: bool = True,
+    frontend_timeout: int = 60,
 ) -> None:
-    """Start FairSense-AgentiX with backend and frontend servers.
+    """Start FairSense-AgentiX with backend and (optionally) frontend servers.
 
-    This launches both the FastAPI backend and React UI development server,
-    making the platform immediately usable in your browser.
+    From a source checkout this launches both the FastAPI backend and the React
+    UI development server. The UI is not included in the PyPI package; from an
+    installed wheel the launcher runs the backend only and prints the API URL.
 
     Parameters
     ----------
@@ -272,6 +295,11 @@ def start(
         Enable uvicorn auto-reload on code changes
         Useful for customizing prompts, configs, or tool parameters
         Frontend has built-in hot-reload via Vite
+    ui : bool, default=True
+        Start the React UI as well. Set False for a backend-only server; it is
+        also switched off automatically when ``ui/`` is not present.
+    frontend_timeout : int, default=60
+        Seconds to wait for the Vite dev server before giving up
 
     Examples
     --------
@@ -297,12 +325,17 @@ def start(
 
         >>> server.start(open_browser=False)
 
+    Backend only (API + /docs, no Node.js needed):
+
+        >>> server.start(ui=False)
+
     Notes
     -----
     - Backend startup takes 30-45s on first run (model preloading)
     - Frontend auto-installs npm dependencies if needed (1-2 min first time)
     - Press Ctrl+C for graceful shutdown
-    - Requires Node.js/npm installed (https://nodejs.org/)
+    - The UI requires a source checkout and Node.js/npm (https://nodejs.org/);
+      ``pip install fairsense-agentix`` provides the backend only
     """
     ensure_root_logging(logging.DEBUG if verbose else logging.INFO)
 
@@ -312,6 +345,8 @@ def start(
         open_browser=open_browser,
         verbose=verbose,
         reload=reload,
+        ui=ui,
+        frontend_timeout=frontend_timeout,
     )
 
     launcher.start()
