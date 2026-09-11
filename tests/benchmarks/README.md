@@ -51,9 +51,7 @@ Each graph is benchmarked with three input sizes:
 - **large**: ~500-word executive job posting with complex biases
 
 ### BiasImageGraph
-- **small**: ~2KB fake image bytes
-- **medium**: ~200KB fake image bytes
-- **large**: ~2MB fake image bytes
+- **small / medium / large**: the three JPEG fixtures in `tests/fixtures/bias_images/`, ordered by file size (~45 KB, ~110 KB, ~130 KB). Real images are required so that OCR/caption/VLM tools can decode them; random bytes fail on every iteration.
 
 ### RiskGraph
 - **small**: ~20-word AI deployment scenario (top_k=3)
@@ -64,6 +62,12 @@ Each graph is benchmarked with three input sizes:
 - **text**: Text workflow via orchestrator
 - **image**: Image workflow via orchestrator
 - **risk**: Risk workflow via orchestrator
+
+## Exit Status
+
+The script exits **0** only when every requested graph and input size completed all iterations successfully. It exits **1** if any input size has no successful iterations (a "missing result group") or if any iteration failed, and prints the problems under `BENCHMARK INCOMPLETE`. Pass `--allow-errors` to still exit 0 for exploratory runs (problems are reported either way and stored under `"problems"` in the JSON).
+
+An iteration counts as failed when `graph.invoke` raises **or** when the returned result carries a failure — the orchestrator catches workflow exceptions and reports them via `final_result["status"] != "success"` / `final_result["errors"]` rather than raising, so a returned result is not proof of success.
 
 ## Output Format
 
@@ -107,11 +111,16 @@ Results are saved as JSON with the following structure:
           "success_rate": 1.0,
           "total_errors": 0
         }
-      }
+      },
+      "missing_sizes": [],
+      "error_samples": {}
     }
-  }
+  },
+  "problems": []
 }
 ```
+
+`missing_sizes` lists input sizes with no successful iteration; `error_samples` holds the first error message per input size; `problems` is the flattened list printed at the end of the run.
 
 ## Metrics Explained
 
@@ -131,9 +140,9 @@ Results are saved as JSON with the following structure:
 - Higher is better
 
 ### Success Rate
-- Percentage of iterations that completed without errors
+- Percentage of iterations that completed without errors (raised exceptions **and** results reporting a failure status both count as errors)
 - Should be 1.0 (100%) for production readiness
-- Values < 1.0 indicate stability issues
+- Values < 1.0 indicate stability issues and make the script exit non-zero
 
 ## Interpretation Guide
 
