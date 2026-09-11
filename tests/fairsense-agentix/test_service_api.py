@@ -317,8 +317,10 @@ class TestBatch:
         assert response.json()["total"] == 2
 
         _wait_for(
-            lambda: client.get(f"/v1/batch/{job_id}").json()["status"]
-            in {"completed", "failed"},
+            lambda: (
+                client.get(f"/v1/batch/{job_id}").json()["status"]
+                in {"completed", "failed"}
+            ),
         )
         final = client.get(f"/v1/batch/{job_id}").json()
         assert final["status"] == "completed", final["errors"]
