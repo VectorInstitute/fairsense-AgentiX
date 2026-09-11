@@ -244,6 +244,7 @@ def _build_plain_langchain_model() -> BaseLanguageModel:
         base_model = ChatOpenAI(
             model=settings.llm_model_name,
             api_key=SecretStr(settings.llm_api_key) if settings.llm_api_key else None,
+            base_url=settings.llm_base_url,
             callbacks=[callback],
         )
         return cast(BaseLanguageModel, base_model.with_retry(stop_after_attempt=3))

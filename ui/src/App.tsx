@@ -5,7 +5,7 @@ import vectorLogo from "./assets/Vector Logo_Bilingual_White_Horizontal.png";
 import fairsenseLogo from "./assets/fairsense-logo.png";
 import aixpertLogo from "./assets/AIXPERT_logo_extended_white-2048x896.png";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { analyzeStart, analyzeFileStart, connectToStream, API_BASE } from "./api";
+import { analyzeStart, analyzeFileStart, connectToStream, health, API_BASE } from "./api";
 
 const LinkedInIcon = ({ size = 16 }: { size?: number }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor">
@@ -199,6 +199,15 @@ export default function App() {
   const [showLoadingBanner, setShowLoadingBanner] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [mockProvider, setMockProvider] = useState<string | null>(null);
+
+  // Surface mock mode prominently: with FAIRSENSE_LLM_PROVIDER=fake the backend
+  // returns synthetic placeholder results that look like a real analysis.
+  useEffect(() => {
+    health()
+      .then((h) => setMockProvider(h.mock_mode ? h.llm_provider : null))
+      .catch(() => setMockProvider(null));
+  }, []);
   const [showShutdownModal, setShowShutdownModal] = useState(false);
   const [showAboutModal, setShowAboutModal] = useState(false);
   const wsRef = useRef<WebSocket | null>(null);
@@ -364,6 +373,16 @@ export default function App() {
       </nav>
       <div className="px-8 py-8">
 
+      {/* Mock-mode banner */}
+      {mockProvider && (
+        <div className="mb-6 rounded-xl border border-amber-600/60 bg-amber-900/30 px-4 py-3 text-sm text-amber-200">
+          <strong>Mock mode:</strong> the backend is running with{" "}
+          <code>FAIRSENSE_LLM_PROVIDER={mockProvider}</code>. Results shown here are synthetic
+          placeholders, not a real analysis. Set <code>FAIRSENSE_LLM_PROVIDER</code> and{" "}
+          <code>FAIRSENSE_LLM_API_KEY</code> and restart the server for real results.
+        </div>
+      )}
+
       {/* Inline error banner */}
       {errorMessage && (
         <div className="mb-6 flex items-start gap-3 rounded-xl border border-red-700/50 bg-red-900/20 px-4 py-3 text-sm text-red-300">
@@ -464,7 +483,7 @@ export default function App() {
                           const f = await createDemoImageFile(DEMO_IMAGE_SVGs[demo.key], `${demo.key}.png`);
                           setFile(f);
                         } catch (err) {
-                          setError(err instanceof Error ? err.message : "Failed to load demo image.");
+                          setErrorMessage(err instanceof Error ? err.message : "Failed to load demo image.");
                         }
                       }}
                       className="group overflow-hidden rounded-xl border border-slate-700 hover:border-accent-200/50 transition-colors text-left"

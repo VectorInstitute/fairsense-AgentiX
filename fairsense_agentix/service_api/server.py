@@ -16,6 +16,7 @@ from fairsense_agentix import (
     __version__,
     logging_config,  # noqa: F401 (imported for side effects)
 )
+from fairsense_agentix.configs import settings
 from fairsense_agentix.service_api import app_state
 from fairsense_agentix.service_api.routes import analyze, batch, health, stream
 from fairsense_agentix.services import telemetry
@@ -43,6 +44,12 @@ async def lifespan(fastapi_app: FastAPI) -> AsyncIterator[None]:
 
     app_state.engine = FairSense()
     logger.info("✅ FairSense engine initialized with all models loaded")
+    if settings.llm_provider == "fake":
+        logger.warning(
+            "⚠️  MOCK MODE: FAIRSENSE_LLM_PROVIDER=fake. All analysis results are "
+            "synthetic placeholders. Set FAIRSENSE_LLM_PROVIDER and "
+            "FAIRSENSE_LLM_API_KEY for real analysis.",
+        )
 
     app_state.event_bus = AgentEventBus(telemetry)
     loop = asyncio.get_running_loop()
@@ -62,9 +69,10 @@ app = FastAPI(
     version=__version__,
     lifespan=lifespan,
 )
+# Origins come from FAIRSENSE_API_CORS_ORIGINS (default: local Vite dev server).
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=settings.api_cors_origins,
     allow_methods=["*"],
     allow_headers=["*"],
 )

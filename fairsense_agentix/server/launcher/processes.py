@@ -20,7 +20,8 @@ def _log_debug(verbose: bool, msg: str, *args: object) -> None:
 def start_backend(port: int, *, reload: bool, verbose: bool) -> subprocess.Popen:
     """Start FastAPI backend via uvicorn.
 
-    Uses run_server.py script which launches uvicorn with proper settings.
+    Runs ``python -m fairsense_agentix.service_api`` so it works both from a
+    source checkout and from an installed wheel.
 
     Parameters
     ----------
@@ -35,15 +36,14 @@ def start_backend(port: int, *, reload: bool, verbose: bool) -> subprocess.Popen
     -------
     subprocess.Popen
         Backend process handle
-
-    Raises
-    ------
-    FileNotFoundError
-        If run_server.py is not found
     """
     env = os.environ.copy()
     env["FAIRSENSE_API_PORT"] = str(port)
     env["FAIRSENSE_API_RELOAD"] = "true" if reload else "false"
+    # The bundled UI has a "stop server" button. The endpoint is off by default
+    # and, without a token, only accepts loopback clients — so this is safe for
+    # the local launcher but never exposed by a plain `uvicorn` deployment.
+    env.setdefault("FAIRSENSE_API_ENABLE_SHUTDOWN_ENDPOINT", "true")
 
     # CRITICAL: Re-enable eager loading for backend subprocess.
     # The parent process has FAIRSENSE_DISABLE_EAGER_LOADING=true
@@ -52,33 +52,19 @@ def start_backend(port: int, *, reload: bool, verbose: bool) -> subprocess.Popen
         del env["FAIRSENSE_DISABLE_EAGER_LOADING"]
         _log_debug(verbose, "Re-enabled eager loading for backend subprocess")
 
-    project_root = Path(__file__).parent.parent.parent.parent
-    script = project_root / "run_server.py"
+    cmd = [sys.executable, "-m", "fairsense_agentix.service_api"]
 
-    _log_debug(verbose, "Backend script path: %s", script)
-    _log_debug(verbose, "Script exists: %s", script.exists())
-    _log_debug(verbose, "Project root: %s", project_root)
+    _log_debug(verbose, "Backend command: %s", " ".join(cmd))
     _log_debug(verbose, "Python executable: %s", sys.executable)
     _log_debug(verbose, "Backend port: %s", port)
 
-    if not script.exists():
-        raise FileNotFoundError(
-            f"Backend launcher script not found: {script}\n"
-            f"Ensure you're running from the project root directory.",
-        )
-
     _log_debug(verbose, "Starting backend subprocess...")
     if verbose:
-        proc = subprocess.Popen(
-            [sys.executable, str(script)],
-            env=env,
-            cwd=str(project_root),
-        )
+        proc = subprocess.Popen(cmd, env=env)
     else:
         proc = subprocess.Popen(
-            [sys.executable, str(script)],
+            cmd,
             env=env,
-            cwd=str(project_root),
             stdout=subprocess.DEVNULL,
             stderr=subprocess.DEVNULL,
         )
@@ -86,6 +72,16 @@ def start_backend(port: int, *, reload: bool, verbose: bool) -> subprocess.Popen
     _log_debug(verbose, "Backend process started with PID: %s", proc.pid)
     _log_debug(verbose, "Process poll status: %s", proc.poll())
     return proc
+
+
+def find_ui_dir() -> Path | None:
+    """Locate the React UI source (``ui/`` at the repository root).
+
+    The UI is not part of the published wheel, so this returns ``None`` for a
+    PyPI install; callers should fall back to backend-only mode.
+    """
+    ui_dir = Path(__file__).parent.parent.parent.parent / "ui"
+    return ui_dir if (ui_dir / "package.json").exists() else None
 
 
 def start_frontend(
@@ -120,13 +116,12 @@ def start_frontend(
     env = os.environ.copy()
     env["VITE_API_BASE"] = f"http://localhost:{backend_port}"
 
-    project_root = Path(__file__).parent.parent.parent.parent
-    ui_dir = project_root / "ui"
+    ui_dir = find_ui_dir()
 
-    if not ui_dir.exists():
+    if ui_dir is None:
         raise FileNotFoundError(
-            f"UI directory not found: {ui_dir}\n"
-            f"Ensure you cloned the repository completely.",
+            "UI directory not found. The web UI ships only with the source "
+            "checkout (git clone), not with the PyPI wheel.",
         )
 
     node_modules = ui_dir / "node_modules"

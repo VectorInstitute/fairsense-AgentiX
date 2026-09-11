@@ -28,7 +28,6 @@ on:
 
 jobs:
   run-code-check:
-    if: false # disable this job until disk issue fixed
     runs-on: ubuntu-latest
 
     steps:
@@ -53,8 +52,8 @@ jobs:
           # This installs:
           # - main [project].dependencies
           # - [dependency-groups].dev
-          # It does NOT pull in the docs group.
-          uv sync --group dev
+          # --no-default-groups keeps the docs group off the runner (disk space).
+          uv sync --group dev --no-default-groups
 
       - name: Run pre-commit on all files
         run: |

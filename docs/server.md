@@ -22,6 +22,11 @@ This will:
 - Wait for both services to be ready (health checks)
 - Gracefully shutdown on Ctrl+C
 
+!!! note "Source checkout vs. `pip install`"
+    The React UI lives in `ui/` in the git repository and is **not** included in the PyPI wheel. From a `pip install fairsense-agentix` environment, `server.start()` runs the backend only (it prints a notice and the API docs URL); to use the web UI, clone the repository and install Node.js. `server.start(ui=False)` requests backend-only mode explicitly.
+
+Options: `port`, `ui_port`, `open_browser`, `verbose`, `reload`, `ui`, `frontend_timeout` (seconds to wait for Vite; default 60).
+
 ---
 
 ## Manual Startup
@@ -29,7 +34,11 @@ This will:
 ### Backend only
 
 ```bash
-uv run uvicorn fairsense_agentix.service_api.server:app --reload
+# Reads FAIRSENSE_API_HOST / FAIRSENSE_API_PORT / FAIRSENSE_API_RELOAD from the environment
+python -m fairsense_agentix.service_api
+
+# Or with uvicorn directly (note: uvicorn ignores FAIRSENSE_API_HOST/PORT — pass them here)
+uv run uvicorn fairsense_agentix.service_api.server:app --host 127.0.0.1 --port 8000 --reload
 ```
 
 API docs: [http://localhost:8000/docs](http://localhost:8000/docs)

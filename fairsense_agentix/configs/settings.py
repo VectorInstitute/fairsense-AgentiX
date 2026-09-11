@@ -13,11 +13,12 @@ Example:
     $ export FAIRSENSE_LLM_MODEL_NAME="claude-3-5-sonnet-20241022"
 """
 
+import json
 from pathlib import Path
-from typing import Literal
+from typing import Annotated, Literal
 
 from pydantic import Field, ValidationInfo, field_validator
-from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic_settings import BaseSettings, NoDecode, SettingsConfigDict
 
 
 class Settings(BaseSettings):
@@ -35,6 +36,8 @@ class Settings(BaseSettings):
         Specific model identifier
     llm_api_key : str | None
         API key for the LLM provider
+    llm_base_url : str | None
+        Endpoint override for OpenAI-compatible servers (Ollama, vLLM, ...)
     llm_temperature : float
         Sampling temperature for LLM calls (0.0-1.0)
     llm_max_tokens : int
@@ -85,6 +88,12 @@ class Settings(BaseSettings):
         API server port
     api_reload : bool
         Enable auto-reload for development
+    api_cors_origins : list[str]
+        Allowed CORS origins for the API
+    api_enable_shutdown_endpoint : bool
+        Whether POST /v1/shutdown is exposed
+    api_shutdown_token : str | None
+        Shared secret required to call /v1/shutdown (loopback-only when unset)
     max_refinement_iterations : int
         Maximum refinement iterations for evaluators
     workflow_timeout_seconds : int
@@ -133,6 +142,16 @@ class Settings(BaseSettings):
     llm_api_key: str | None = Field(
         default=None,
         description="API key for the LLM provider",
+    )
+
+    llm_base_url: str | None = Field(
+        default=None,
+        description=(
+            "Override the API endpoint for the openai provider. Lets any "
+            "OpenAI-compatible server (Ollama, vLLM, LM Studio, ...) act as the "
+            "LLM backend, e.g. http://localhost:11434/v1 for Ollama. Ignored by "
+            "other providers."
+        ),
     )
 
     llm_temperature: float = Field(
@@ -319,8 +338,12 @@ class Settings(BaseSettings):
     # API Server Configuration
     # ===========================
     api_host: str = Field(
-        default="0.0.0.0",
-        description="API server host address",
+        default="127.0.0.1",
+        description=(
+            "API server bind address. Defaults to loopback so the service is not "
+            "reachable from other hosts; set to 0.0.0.0 to expose it (e.g. in a "
+            "container behind a reverse proxy)."
+        ),
     )
 
     api_port: int = Field(
@@ -333,6 +356,31 @@ class Settings(BaseSettings):
     api_reload: bool = Field(
         default=False,
         description="Enable auto-reload for development (uvicorn --reload)",
+    )
+
+    api_cors_origins: Annotated[list[str], NoDecode] = Field(
+        default=["http://localhost:5173", "http://127.0.0.1:5173"],
+        description=(
+            "Allowed CORS origins for the API (JSON list or comma-separated). "
+            "Defaults to the local Vite dev server; use ['*'] to allow any origin."
+        ),
+    )
+
+    api_enable_shutdown_endpoint: bool = Field(
+        default=False,
+        description=(
+            "Expose POST /v1/shutdown. Disabled by default; the server launcher "
+            "enables it so the bundled UI can stop the local backend."
+        ),
+    )
+
+    api_shutdown_token: str | None = Field(
+        default=None,
+        description=(
+            "Shared secret required in the X-Shutdown-Token header for "
+            "/v1/shutdown. When unset, shutdown requests are only accepted from "
+            "loopback clients."
+        ),
     )
 
     # ===========================
@@ -509,6 +557,37 @@ class Settings(BaseSettings):
             Absolute path
         """
         return v.expanduser().resolve()
+
+    @property
+    def mock_components(self) -> list[str]:
+        """Names of tools configured with a ``fake`` (mock) implementation.
+
+        Empty when every tool is real. Used to label results and API responses
+        so that synthetic output is never mistaken for a real analysis.
+        """
+        candidates = {
+            "llm": self.llm_provider,
+            "ocr": self.ocr_tool,
+            "caption": self.caption_model,
+            "embedder": self.embedding_model,
+        }
+        return [name for name, value in candidates.items() if value == "fake"]
+
+    @property
+    def mock_mode(self) -> bool:
+        """True when any tool is a fake — results are synthetic placeholders."""
+        return bool(self.mock_components)
+
+    @field_validator("api_cors_origins", mode="before")
+    @classmethod
+    def parse_cors_origins(cls, v: object) -> object:
+        """Accept a JSON list or a comma-separated string for CORS origins."""
+        if isinstance(v, str):
+            stripped = v.strip()
+            if stripped.startswith("["):
+                return json.loads(stripped)
+            return [item.strip() for item in stripped.split(",") if item.strip()]
+        return v
 
     @field_validator("llm_api_key")
     @classmethod

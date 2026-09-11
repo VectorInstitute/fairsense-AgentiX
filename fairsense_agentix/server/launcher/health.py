@@ -27,7 +27,7 @@ def wait_for_backend(  # noqa: PLR0912
     """Wait for backend to respond to health checks.
 
     Tries both localhost and 127.0.0.1 for maximum compatibility
-    (backend binds to 0.0.0.0 which may not respond to "localhost" on some systems).
+    ("localhost" may resolve to ::1 on some systems while the backend binds IPv4).
 
     Parameters
     ----------
