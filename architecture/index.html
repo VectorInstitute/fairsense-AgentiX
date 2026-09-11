@@ -2162,13 +2162,13 @@
 <tr>
 <td><strong>LLM</strong></td>
 <td><code>LLMTool</code></td>
-<td>GPT-4, Claude, Local (Ollama), Fake</td>
+<td>GPT-4, Claude, any OpenAI-compatible server via <code>llm_base_url</code> (Ollama, vLLM), Fake</td>
 <td>Text generation and analysis</td>
 </tr>
 <tr>
 <td><strong>Embedder</strong></td>
 <td><code>EmbedderTool</code></td>
-<td>sentence-transformers, OpenAI, Fake</td>
+<td>sentence-transformers, Fake</td>
 <td>Text → vector embeddings</td>
 </tr>
 <tr>
@@ -2262,7 +2262,7 @@
 <p><strong>Purpose:</strong> Observable agent reasoning and performance tracking</p>
 <p><strong>Location:</strong> <code>fairsense_agentix/services/telemetry.py</code></p>
 <p><strong>Features:</strong>
-- <strong>Event Streaming:</strong> All workflow transitions, tool calls, and LLM calls emit structured events
+- <strong>Event Streaming:</strong> Every orchestrator and workflow node emits a structured <code>*_start</code> event; node-level warnings/errors are emitted with the matching <code>level</code>
 - <strong>WebSocket Integration:</strong> Real-time events pushed to UI via <code>/v1/stream/{run_id}</code>
 - <strong>Performance Tracking:</strong> Timers for every operation (node execution, tool calls, LLM calls)
 - <strong>Context Propagation:</strong> <code>run_id</code> tracks execution across all components</p>
@@ -2277,52 +2277,58 @@
 </thead>
 <tbody>
 <tr>
-<td><code>workflow_start</code></td>
-<td>Analysis begins</td>
-<td><code>input_type</code>, <code>workflow_id</code></td>
+<td><code>orchestrator_plan_start</code></td>
+<td>Router node begins</td>
+<td><code>input_type</code>, <code>refinement_count</code></td>
 </tr>
 <tr>
-<td><code>phase_transition</code></td>
-<td>Node execution</td>
-<td><code>from_phase</code>, <code>to_phase</code>, <code>phase_number</code></td>
+<td><code>orchestrator_preflight_start</code></td>
+<td>Pre-flight check</td>
+<td><code>has_plan</code></td>
 </tr>
 <tr>
-<td><code>tool_call_start</code></td>
-<td>Tool invocation</td>
-<td><code>tool_name</code>, <code>inputs</code></td>
+<td><code>orchestrator_execute_start</code></td>
+<td>Subgraph dispatch</td>
+<td><code>workflow_id</code></td>
 </tr>
 <tr>
-<td><code>tool_call_end</code></td>
-<td>Tool completes</td>
-<td><code>tool_name</code>, <code>outputs</code>, <code>duration_ms</code></td>
+<td><code>bias_text_analyze_start</code>, <code>risk_embed_start</code>, <code>bias_image_vlm_analyze_start</code>, …</td>
+<td>Each subgraph node</td>
+<td>node-specific (e.g. <code>text_length</code>, <code>risk_count</code>, <code>model</code>)</td>
 </tr>
 <tr>
-<td><code>llm_call_start</code></td>
-<td>LLM request</td>
-<td><code>model</code>, <code>temperature</code>, <code>max_tokens</code></td>
+<td><code>orchestrator_posthoc_start</code></td>
+<td>Post-hoc evaluation</td>
+<td><code>has_result</code></td>
 </tr>
 <tr>
-<td><code>llm_call_end</code></td>
-<td>LLM response</td>
-<td><code>model</code>, <code>tokens_used</code>, <code>duration_ms</code></td>
+<td><code>orchestrator_decide_start</code></td>
+<td>Accept / refine decision</td>
+<td><code>refinement_count</code>, <code>refinement_enabled</code></td>
 </tr>
 <tr>
-<td><code>refinement_start</code></td>
-<td>Refinement iteration begins</td>
-<td><code>iteration_number</code>, <code>reason</code></td>
+<td><code>orchestrator_refine_start</code></td>
+<td>Refinement pass triggered</td>
+<td><code>current_refinement_count</code></td>
+</tr>
+<tr>
+<td><code>orchestrator_finalize_start</code></td>
+<td>Result packaging</td>
+<td><code>decision</code>, <code>refinement_count</code></td>
 </tr>
 <tr>
 <td><code>analysis_complete</code></td>
-<td>Workflow finishes</td>
-<td><code>result</code> (full output)</td>
+<td>Service layer, on success</td>
+<td><code>message</code>, <code>result</code> (full <code>AnalyzeResponse</code>)</td>
 </tr>
 <tr>
 <td><code>analysis_error</code></td>
-<td>Workflow fails</td>
-<td><code>error_type</code>, <code>error_message</code></td>
+<td>Service layer, on failure</td>
+<td><code>message</code>, <code>error_type</code></td>
 </tr>
 </tbody>
 </table>
+<p>The complete per-workflow list is in the <a href="../api/#event-types">API Reference</a>.</p>
 <p><strong>WebSocket Example:</strong>
 <div class="language-python highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">websockets</span>
 </span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>
@@ -2396,19 +2402,17 @@
 1. Client calls <code>/v1/analyze/start</code> → receives <code>run_id</code>
 2. Client connects to <code>/v1/stream/{run_id}</code> immediately
 3. Backend runs analysis in background, emits events to WebSocket
-4. WebSocket closes after <code>analysis_complete</code> or <code>analysis_error</code></p>
+4. Client closes the WebSocket after <code>analysis_complete</code> or <code>analysis_error</code> (the server keeps it open)</p>
 <p><strong>Event Format:</strong>
 <div class="language-json highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="p">{</span>
 </span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="w">  </span><span class="nt">&quot;run_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;abc123...&quot;</span><span class="p">,</span>
 </span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="w">  </span><span class="nt">&quot;timestamp&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">1234567890.123</span><span class="p">,</span>
-</span><span id="__span-7-4"><a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="w">  </span><span class="nt">&quot;event&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;tool_call_start&quot;</span><span class="p">,</span>
+</span><span id="__span-7-4"><a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="w">  </span><span class="nt">&quot;event&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;bias_image_ocr_start&quot;</span><span class="p">,</span>
 </span><span id="__span-7-5"><a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a><span class="w">  </span><span class="nt">&quot;level&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;info&quot;</span><span class="p">,</span>
 </span><span id="__span-7-6"><a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a><span class="w">  </span><span class="nt">&quot;context&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-7-7"><a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a><span class="w">    </span><span class="nt">&quot;message&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Running OCR on image&quot;</span><span class="p">,</span>
-</span><span id="__span-7-8"><a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a><span class="w">    </span><span class="nt">&quot;tool_name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;ocr&quot;</span><span class="p">,</span>
-</span><span id="__span-7-9"><a id="__codelineno-7-9" name="__codelineno-7-9" href="#__codelineno-7-9"></a><span class="w">    </span><span class="nt">&quot;inputs&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;...&quot;</span>
-</span><span id="__span-7-10"><a id="__codelineno-7-10" name="__codelineno-7-10" href="#__codelineno-7-10"></a><span class="w">  </span><span class="p">}</span>
-</span><span id="__span-7-11"><a id="__codelineno-7-11" name="__codelineno-7-11" href="#__codelineno-7-11"></a><span class="p">}</span>
+</span><span id="__span-7-7"><a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a><span class="w">    </span><span class="nt">&quot;image_size&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">45760</span>
+</span><span id="__span-7-8"><a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a><span class="w">  </span><span class="p">}</span>
+</span><span id="__span-7-9"><a id="__codelineno-7-9" name="__codelineno-7-9" href="#__codelineno-7-9"></a><span class="p">}</span>
 </span></code></pre></div></p>
 <hr />
 <h3 id="9-frontend-ui">9. Frontend UI<a class="headerlink" href="#9-frontend-ui" title="Permanent link">&para;</a></h3>

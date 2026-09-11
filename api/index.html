@@ -1066,6 +1066,33 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#fairsense_agentix.api.ResultMetadata.llm_provider" class="md-nav__link">
+    <span class="md-ellipsis">
+      <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;llm_provider
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fairsense_agentix.api.ResultMetadata.mock_mode" class="md-nav__link">
+    <span class="md-ellipsis">
+      <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;mock_mode
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fairsense_agentix.api.ResultMetadata.mock_components" class="md-nav__link">
+    <span class="md-ellipsis">
+      <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;mock_components
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -1236,18 +1263,27 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#workflow-events" class="md-nav__link">
+  <a href="#orchestrator-events-every-workflow" class="md-nav__link">
     <span class="md-ellipsis">
-      Workflow Events
+      Orchestrator events (every workflow)
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#phase-events" class="md-nav__link">
+  <a href="#workflow-events" class="md-nav__link">
     <span class="md-ellipsis">
-      Phase Events
+      Workflow events
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#terminal-events-emitted-by-the-service-layer" class="md-nav__link">
+    <span class="md-ellipsis">
+      Terminal events (emitted by the service layer)
     </span>
   </a>
   
@@ -1900,6 +1936,33 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#fairsense_agentix.api.ResultMetadata.llm_provider" class="md-nav__link">
+    <span class="md-ellipsis">
+      <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;llm_provider
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fairsense_agentix.api.ResultMetadata.mock_mode" class="md-nav__link">
+    <span class="md-ellipsis">
+      <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;mock_mode
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fairsense_agentix.api.ResultMetadata.mock_components" class="md-nav__link">
+    <span class="md-ellipsis">
+      <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;mock_components
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -2070,18 +2133,27 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#workflow-events" class="md-nav__link">
+  <a href="#orchestrator-events-every-workflow" class="md-nav__link">
     <span class="md-ellipsis">
-      Workflow Events
+      Orchestrator events (every workflow)
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#phase-events" class="md-nav__link">
+  <a href="#workflow-events" class="md-nav__link">
     <span class="md-ellipsis">
-      Phase Events
+      Workflow events
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#terminal-events-emitted-by-the-service-layer" class="md-nav__link">
+    <span class="md-ellipsis">
+      Terminal events (emitted by the service layer)
     </span>
   </a>
   
@@ -4011,6 +4083,59 @@ attribute-style access to all results and metadata.</p>
               </div>
             </td>
           </tr>
+          <tr class="doc-section-item">
+            <td><code><a class="autorefs autorefs-internal" title="            llm_provider
+
+
+  
+      class-attribute
+      instance-attribute
+   (fairsense_agentix.api.ResultMetadata.llm_provider)" href="#fairsense_agentix.api.ResultMetadata.llm_provider">llm_provider</a></code></td>
+            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>LLM provider that produced this result ("openai", "anthropic", "fake", ...)</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><a class="autorefs autorefs-internal" title="            mock_mode
+
+
+  
+      class-attribute
+      instance-attribute
+   (fairsense_agentix.api.ResultMetadata.mock_mode)" href="#fairsense_agentix.api.ResultMetadata.mock_mode">mock_mode</a></code></td>
+            <td>
+                  <code><span title="bool">bool</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>True when any tool was a <code>fake</code> implementation. Such results are
+synthetic placeholders for testing and must not be interpreted as a
+real analysis.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><a class="autorefs autorefs-internal" title="            mock_components
+
+
+  
+      class-attribute
+      instance-attribute
+   (fairsense_agentix.api.ResultMetadata.mock_components)" href="#fairsense_agentix.api.ResultMetadata.mock_components">mock_components</a></code></td>
+            <td>
+                  <code><span title="list">list</span>[<span title="str">str</span>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Which tools were fakes (e.g. <code>["llm", "ocr"]</code>); empty when none</p>
+              </div>
+            </td>
+          </tr>
       </tbody>
     </table>
 
@@ -4238,6 +4363,84 @@ attribute-style access to all results and metadata.</p>
 
 </div>
 
+<div class="doc doc-object doc-attribute">
+
+
+
+<h6 id="fairsense_agentix.api.ResultMetadata.llm_provider" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <span class="doc doc-object-name doc-attribute-name">llm_provider</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-class-attribute"><code>class-attribute</code></small>
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
+  </span>
+
+<a href="#fairsense_agentix.api.ResultMetadata.llm_provider" class="headerlink" title="Permanent link">&para;</a></h6>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">llm_provider</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>    <span class="s2">&quot;unknown&quot;</span><span class="p">,</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>    <span class="n">description</span><span class="o">=</span><span class="s2">&quot;LLM provider that produced this result&quot;</span><span class="p">,</span>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="p">)</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h6 id="fairsense_agentix.api.ResultMetadata.mock_mode" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <span class="doc doc-object-name doc-attribute-name">mock_mode</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-class-attribute"><code>class-attribute</code></small>
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
+  </span>
+
+<a href="#fairsense_agentix.api.ResultMetadata.mock_mode" class="headerlink" title="Permanent link">&para;</a></h6>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">mock_mode</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>    <span class="kc">False</span><span class="p">,</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>    <span class="n">description</span><span class="o">=</span><span class="s2">&quot;True when any tool was a fake implementation; the result is a synthetic placeholder, not a real analysis&quot;</span><span class="p">,</span>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="p">)</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h6 id="fairsense_agentix.api.ResultMetadata.mock_components" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <span class="doc doc-object-name doc-attribute-name">mock_components</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-class-attribute"><code>class-attribute</code></small>
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
+  </span>
+
+<a href="#fairsense_agentix.api.ResultMetadata.mock_components" class="headerlink" title="Permanent link">&para;</a></h6>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">mock_components</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>    <span class="n">default_factory</span><span class="o">=</span><span class="nb">list</span><span class="p">,</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>    <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Tools that were fakes (e.g. [&#39;llm&#39;]); empty when none&quot;</span><span class="p">,</span>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="p">)</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+
+    </div>
+
+</div>
+
 
 
 
@@ -4261,9 +4464,12 @@ attribute-style access to all results and metadata.</p>
 <p><strong>Endpoint:</strong> <code>GET /v1/health</code></p>
 <p><strong>Response:</strong>
 <div class="language-json highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="p">{</span>
-</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="w">  </span><span class="nt">&quot;status&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;ok&quot;</span>
-</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="p">}</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="w">  </span><span class="nt">&quot;status&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;ok&quot;</span><span class="p">,</span>
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="w">  </span><span class="nt">&quot;llm_provider&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;openai&quot;</span><span class="p">,</span>
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="w">  </span><span class="nt">&quot;mock_mode&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span>
+</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="p">}</span>
 </span></code></pre></div></p>
+<p><code>mock_mode</code> is <code>true</code> when the server runs with <code>FAIRSENSE_LLM_PROVIDER=fake</code>; every analysis result is then a synthetic placeholder and the UI shows a warning banner.</p>
 <p><strong>cURL Example:</strong>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>curl<span class="w"> </span>http://localhost:8000/v1/health
 </span></code></pre></div></p>
@@ -4457,8 +4663,13 @@ attribute-style access to all results and metadata.</p>
 </span></code></pre></div></p>
 <hr />
 <h4 id="shutdown-server">Shutdown Server<a class="headerlink" href="#shutdown-server" title="Permanent link">&para;</a></h4>
-<p>Gracefully shutdown the backend server (used by UI shutdown button).</p>
+<p>Gracefully shutdown the backend server (used by the UI shutdown button).</p>
 <p><strong>Endpoint:</strong> <code>POST /v1/shutdown</code></p>
+<p>The endpoint is <strong>disabled by default</strong> and returns <code>404</code> unless <code>FAIRSENSE_API_ENABLE_SHUTDOWN_ENDPOINT=true</code>. The server launcher (<code>fairsense_agentix.server</code>) sets this for the local backend it manages. When enabled:</p>
+<ul>
+<li>If <code>FAIRSENSE_API_SHUTDOWN_TOKEN</code> is set, the request must carry a matching <code>X-Shutdown-Token</code> header (otherwise <code>403</code>).</li>
+<li>If no token is set, only loopback clients (<code>127.0.0.1</code> / <code>::1</code>) may shut the server down; remote callers get <code>403</code>.</li>
+</ul>
 <p><strong>Response:</strong>
 <div class="language-json highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="p">{</span>
 </span><span id="__span-13-2"><a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a><span class="w">  </span><span class="nt">&quot;status&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;shutting_down&quot;</span><span class="p">,</span>
@@ -4466,7 +4677,8 @@ attribute-style access to all results and metadata.</p>
 </span><span id="__span-13-4"><a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a><span class="p">}</span>
 </span></code></pre></div></p>
 <p><strong>cURL Example:</strong>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a>curl<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span>http://localhost:8000/v1/shutdown
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a>curl<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span>http://localhost:8000/v1/shutdown<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-14-2"><a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a><span class="w">  </span>-H<span class="w"> </span><span class="s2">&quot;X-Shutdown-Token: </span><span class="nv">$FAIRSENSE_API_SHUTDOWN_TOKEN</span><span class="s2">&quot;</span>
 </span></code></pre></div></p>
 <hr />
 <h2 id="websocket-protocol">WebSocket Protocol<a class="headerlink" href="#websocket-protocol" title="Permanent link">&para;</a></h2>
@@ -4477,125 +4689,112 @@ attribute-style access to all results and metadata.</p>
 <p>Connect to this WebSocket <strong>after</strong> calling <code>/v1/analyze/start</code> to receive live events.</p>
 <hr />
 <h3 id="event-structure">Event Structure<a class="headerlink" href="#event-structure" title="Permanent link">&para;</a></h3>
-<p>All events follow this JSON structure:</p>
+<p>Every message is the JSON telemetry payload emitted by the agent, forwarded to the client whose <code>run_id</code> it carries:</p>
 <div class="language-json highlight"><pre><span></span><code><span id="__span-16-1"><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a><span class="p">{</span>
 </span><span id="__span-16-2"><a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a><span class="w">  </span><span class="nt">&quot;run_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;a1b2c3d4-...&quot;</span><span class="p">,</span>
 </span><span id="__span-16-3"><a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a><span class="w">  </span><span class="nt">&quot;timestamp&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">1234567890.123</span><span class="p">,</span>
-</span><span id="__span-16-4"><a id="__codelineno-16-4" name="__codelineno-16-4" href="#__codelineno-16-4"></a><span class="w">  </span><span class="nt">&quot;event&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;event_name&quot;</span><span class="p">,</span>
-</span><span id="__span-16-5"><a id="__codelineno-16-5" name="__codelineno-16-5" href="#__codelineno-16-5"></a><span class="w">  </span><span class="nt">&quot;level&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;info&quot;</span><span class="p">,</span><span class="w">  </span><span class="c1">// &quot;info&quot; | &quot;warning&quot; | &quot;error&quot;</span>
+</span><span id="__span-16-4"><a id="__codelineno-16-4" name="__codelineno-16-4" href="#__codelineno-16-4"></a><span class="w">  </span><span class="nt">&quot;event&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;bias_text_analyze_start&quot;</span><span class="p">,</span>
+</span><span id="__span-16-5"><a id="__codelineno-16-5" name="__codelineno-16-5" href="#__codelineno-16-5"></a><span class="w">  </span><span class="nt">&quot;level&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;info&quot;</span><span class="p">,</span>
 </span><span id="__span-16-6"><a id="__codelineno-16-6" name="__codelineno-16-6" href="#__codelineno-16-6"></a><span class="w">  </span><span class="nt">&quot;context&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-16-7"><a id="__codelineno-16-7" name="__codelineno-16-7" href="#__codelineno-16-7"></a><span class="w">    </span><span class="nt">&quot;message&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Human-readable event description&quot;</span><span class="p">,</span>
-</span><span id="__span-16-8"><a id="__codelineno-16-8" name="__codelineno-16-8" href="#__codelineno-16-8"></a><span class="w">    </span><span class="nt">&quot;phase&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;planning&quot;</span><span class="p">,</span><span class="w">  </span><span class="c1">// Current workflow phase</span>
-</span><span id="__span-16-9"><a id="__codelineno-16-9" name="__codelineno-16-9" href="#__codelineno-16-9"></a><span class="w">    </span><span class="c1">// ... additional event-specific fields</span>
-</span><span id="__span-16-10"><a id="__codelineno-16-10" name="__codelineno-16-10" href="#__codelineno-16-10"></a><span class="w">  </span><span class="p">}</span>
-</span><span id="__span-16-11"><a id="__codelineno-16-11" name="__codelineno-16-11" href="#__codelineno-16-11"></a><span class="p">}</span>
+</span><span id="__span-16-7"><a id="__codelineno-16-7" name="__codelineno-16-7" href="#__codelineno-16-7"></a><span class="w">    </span><span class="nt">&quot;text_length&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">128</span>
+</span><span id="__span-16-8"><a id="__codelineno-16-8" name="__codelineno-16-8" href="#__codelineno-16-8"></a><span class="w">  </span><span class="p">}</span>
+</span><span id="__span-16-9"><a id="__codelineno-16-9" name="__codelineno-16-9" href="#__codelineno-16-9"></a><span class="p">}</span>
 </span></code></pre></div>
+<p><code>level</code> is <code>"info"</code>, <code>"warning"</code>, or <code>"error"</code>. <code>context</code> holds the structured fields the emitting node attached; there is no fixed schema beyond the event names below. There is no separate <code>message</code> field except on the two terminal events.</p>
 <hr />
 <h3 id="event-types">Event Types<a class="headerlink" href="#event-types" title="Permanent link">&para;</a></h3>
-<h4 id="workflow-events">Workflow Events<a class="headerlink" href="#workflow-events" title="Permanent link">&para;</a></h4>
+<p>Node events are emitted by the orchestrator and the workflow subgraphs as each node begins. Only events that carry the run ID are streamed, so clients see one <code>*_start</code> event per node in execution order.</p>
+<h4 id="orchestrator-events-every-workflow">Orchestrator events (every workflow)<a class="headerlink" href="#orchestrator-events-every-workflow" title="Permanent link">&para;</a></h4>
 <table>
 <thead>
 <tr>
 <th>Event</th>
-<th>Description</th>
-<th>Context Fields</th>
+<th>Context fields</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><code>workflow_start</code></td>
-<td>Analysis begins</td>
-<td><code>input_type</code>, <code>workflow_id</code></td>
+<td><code>orchestrator_plan_start</code></td>
+<td><code>input_type</code>, <code>refinement_count</code></td>
 </tr>
 <tr>
-<td><code>phase_transition</code></td>
-<td>Agent moves to new phase</td>
-<td><code>from_phase</code>, <code>to_phase</code>, <code>phase_number</code></td>
+<td><code>orchestrator_preflight_start</code></td>
+<td><code>has_plan</code></td>
 </tr>
 <tr>
-<td><code>tool_call_start</code></td>
-<td>Tool execution begins</td>
-<td><code>tool_name</code>, <code>inputs</code></td>
+<td><code>orchestrator_execute_start</code></td>
+<td><code>workflow_id</code></td>
 </tr>
 <tr>
-<td><code>tool_call_end</code></td>
-<td>Tool execution completes</td>
-<td><code>tool_name</code>, <code>outputs</code>, <code>duration_ms</code></td>
+<td><code>orchestrator_posthoc_start</code></td>
+<td><code>has_result</code></td>
 </tr>
 <tr>
-<td><code>llm_call_start</code></td>
-<td>LLM request begins</td>
-<td><code>model</code>, <code>temperature</code>, <code>max_tokens</code></td>
+<td><code>orchestrator_decide_start</code></td>
+<td><code>refinement_count</code>, <code>refinement_enabled</code></td>
 </tr>
 <tr>
-<td><code>llm_call_end</code></td>
-<td>LLM response received</td>
-<td><code>model</code>, <code>tokens_used</code>, <code>duration_ms</code></td>
+<td><code>orchestrator_refine_start</code></td>
+<td><code>current_refinement_count</code> (only when a refinement pass is triggered)</td>
 </tr>
 <tr>
-<td><code>refinement_start</code></td>
-<td>Refinement iteration begins</td>
-<td><code>iteration_number</code>, <code>reason</code></td>
-</tr>
-<tr>
-<td><code>refinement_end</code></td>
-<td>Refinement iteration completes</td>
-<td><code>iteration_number</code>, <code>improved</code></td>
-</tr>
-<tr>
-<td><code>analysis_complete</code></td>
-<td>Analysis finished successfully</td>
-<td><code>result</code> (full result object)</td>
-</tr>
-<tr>
-<td><code>analysis_error</code></td>
-<td>Analysis failed</td>
-<td><code>error_type</code>, <code>error_message</code></td>
+<td><code>orchestrator_finalize_start</code></td>
+<td><code>decision</code>, <code>refinement_count</code></td>
 </tr>
 </tbody>
 </table>
-<h4 id="phase-events">Phase Events<a class="headerlink" href="#phase-events" title="Permanent link">&para;</a></h4>
+<h4 id="workflow-events">Workflow events<a class="headerlink" href="#workflow-events" title="Permanent link">&para;</a></h4>
 <table>
 <thead>
 <tr>
-<th>Phase</th>
-<th>Event Name</th>
-<th>Description</th>
+<th>Workflow</th>
+<th>Events (in order)</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>Planning</td>
-<td><code>phase_planning</code></td>
-<td>Agent planning analysis strategy</td>
+<td><code>bias_text</code></td>
+<td><code>bias_text_analyze_start</code> (<code>text_length</code>), <code>bias_text_summarize_start</code>*, <code>bias_text_highlight_start</code></td>
 </tr>
 <tr>
-<td>Tool Selection</td>
-<td><code>phase_tool_selection</code></td>
-<td>Selecting appropriate tools</td>
+<td><code>bias_image_vlm</code> (default image mode)</td>
+<td><code>bias_image_vlm_analyze_start</code> (<code>image_size</code>, <code>model</code>, <code>provider</code>), <code>bias_image_vlm_summarize_start</code>, <code>bias_image_vlm_highlight_start</code></td>
 </tr>
 <tr>
-<td>Tool Execution</td>
-<td><code>phase_tool_execution</code></td>
-<td>Running OCR, captioning, embeddings</td>
+<td><code>bias_image</code> (<code>FAIRSENSE_IMAGE_ANALYSIS_MODE=traditional</code>)</td>
+<td><code>bias_image_ocr_start</code>, <code>bias_image_caption_start</code>, <code>bias_image_merge_start</code>, <code>bias_image_analyze_start</code>, <code>bias_image_summarize_start</code>*, <code>bias_image_highlight_start</code></td>
 </tr>
 <tr>
-<td>Evidence Synthesis</td>
-<td><code>phase_synthesis</code></td>
-<td>Combining tool outputs</td>
-</tr>
-<tr>
-<td>Evaluation</td>
-<td><code>phase_evaluation</code></td>
-<td>Quality assessment</td>
-</tr>
-<tr>
-<td>Refinement</td>
-<td><code>phase_refinement</code></td>
-<td>Iterative improvement</td>
+<td><code>risk</code></td>
+<td><code>risk_embed_start</code> (<code>text_length</code>), <code>risk_search_start</code>, <code>risk_rmf_search_start</code> (<code>risk_count</code>), <code>risk_join_start</code> (<code>risk_count</code>), <code>risk_format_start</code> (<code>table_rows</code>), <code>risk_export_start</code> (<code>table_rows</code>), then <code>risk_evaluator_start</code> (<code>workflow_id</code>) during post-hoc evaluation</td>
 </tr>
 </tbody>
 </table>
+<p>* summarisation runs only when the input is long enough (router-controlled).</p>
+<p>Warnings and errors raised inside nodes are streamed with the same envelope and <code>level</code> set accordingly (e.g. <code>posthoc_eval_failed</code>, <code>search_rmf_skipped</code>).</p>
+<h4 id="terminal-events-emitted-by-the-service-layer">Terminal events (emitted by the service layer)<a class="headerlink" href="#terminal-events-emitted-by-the-service-layer" title="Permanent link">&para;</a></h4>
+<table>
+<thead>
+<tr>
+<th>Event</th>
+<th>Level</th>
+<th>Context fields</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>analysis_complete</code></td>
+<td><code>info</code></td>
+<td><code>message</code>, <code>result</code> — the full <code>AnalyzeResponse</code> (<code>workflow_id</code>, <code>run_id</code>, <code>bias_result</code> or <code>risk_result</code>, <code>metadata</code>)</td>
+</tr>
+<tr>
+<td><code>analysis_error</code></td>
+<td><code>error</code></td>
+<td><code>message</code>, <code>error_type</code></td>
+</tr>
+</tbody>
+</table>
+<p>Exactly one of these ends every run started via <code>/v1/analyze/start</code> or <code>/v1/analyze/upload/start</code>.</p>
 <hr />
 <h3 id="connection-lifecycle">Connection Lifecycle<a class="headerlink" href="#connection-lifecycle" title="Permanent link">&para;</a></h3>
 <ol>
@@ -4620,24 +4819,24 @@ attribute-style access to all results and metadata.</p>
    <div class="language-python highlight"><pre><span></span><code><span id="__span-19-1"><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a><span class="k">async</span> <span class="k">for</span> <span class="n">message</span> <span class="ow">in</span> <span class="n">ws</span><span class="p">:</span>
 </span><span id="__span-19-2"><a id="__codelineno-19-2" name="__codelineno-19-2" href="#__codelineno-19-2"></a>    <span class="n">event</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
 </span><span id="__span-19-3"><a id="__codelineno-19-3" name="__codelineno-19-3" href="#__codelineno-19-3"></a>
-</span><span id="__span-19-4"><a id="__codelineno-19-4" name="__codelineno-19-4" href="#__codelineno-19-4"></a>    <span class="c1"># Handle different event types</span>
-</span><span id="__span-19-5"><a id="__codelineno-19-5" name="__codelineno-19-5" href="#__codelineno-19-5"></a>    <span class="k">if</span> <span class="n">event</span><span class="p">[</span><span class="s2">&quot;event&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;tool_call_start&quot;</span><span class="p">:</span>
-</span><span id="__span-19-6"><a id="__codelineno-19-6" name="__codelineno-19-6" href="#__codelineno-19-6"></a>        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Running </span><span class="si">{</span><span class="n">event</span><span class="p">[</span><span class="s1">&#39;context&#39;</span><span class="p">][</span><span class="s1">&#39;tool_name&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">...&quot;</span><span class="p">)</span>
-</span><span id="__span-19-7"><a id="__codelineno-19-7" name="__codelineno-19-7" href="#__codelineno-19-7"></a>
-</span><span id="__span-19-8"><a id="__codelineno-19-8" name="__codelineno-19-8" href="#__codelineno-19-8"></a>    <span class="k">elif</span> <span class="n">event</span><span class="p">[</span><span class="s2">&quot;event&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;analysis_complete&quot;</span><span class="p">:</span>
-</span><span id="__span-19-9"><a id="__codelineno-19-9" name="__codelineno-19-9" href="#__codelineno-19-9"></a>        <span class="n">result</span> <span class="o">=</span> <span class="n">event</span><span class="p">[</span><span class="s2">&quot;context&quot;</span><span class="p">][</span><span class="s2">&quot;result&quot;</span><span class="p">]</span>
-</span><span id="__span-19-10"><a id="__codelineno-19-10" name="__codelineno-19-10" href="#__codelineno-19-10"></a>        <span class="k">break</span>  <span class="c1"># Analysis done</span>
-</span><span id="__span-19-11"><a id="__codelineno-19-11" name="__codelineno-19-11" href="#__codelineno-19-11"></a>
-</span><span id="__span-19-12"><a id="__codelineno-19-12" name="__codelineno-19-12" href="#__codelineno-19-12"></a>    <span class="k">elif</span> <span class="n">event</span><span class="p">[</span><span class="s2">&quot;event&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;analysis_error&quot;</span><span class="p">:</span>
-</span><span id="__span-19-13"><a id="__codelineno-19-13" name="__codelineno-19-13" href="#__codelineno-19-13"></a>        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error: </span><span class="si">{</span><span class="n">event</span><span class="p">[</span><span class="s1">&#39;context&#39;</span><span class="p">][</span><span class="s1">&#39;error_message&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-</span><span id="__span-19-14"><a id="__codelineno-19-14" name="__codelineno-19-14" href="#__codelineno-19-14"></a>        <span class="k">break</span>
+</span><span id="__span-19-4"><a id="__codelineno-19-4" name="__codelineno-19-4" href="#__codelineno-19-4"></a>    <span class="k">if</span> <span class="n">event</span><span class="p">[</span><span class="s2">&quot;event&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;orchestrator_execute_start&quot;</span><span class="p">:</span>
+</span><span id="__span-19-5"><a id="__codelineno-19-5" name="__codelineno-19-5" href="#__codelineno-19-5"></a>        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Running workflow </span><span class="si">{</span><span class="n">event</span><span class="p">[</span><span class="s1">&#39;context&#39;</span><span class="p">][</span><span class="s1">&#39;workflow_id&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">...&quot;</span><span class="p">)</span>
+</span><span id="__span-19-6"><a id="__codelineno-19-6" name="__codelineno-19-6" href="#__codelineno-19-6"></a>
+</span><span id="__span-19-7"><a id="__codelineno-19-7" name="__codelineno-19-7" href="#__codelineno-19-7"></a>    <span class="k">elif</span> <span class="n">event</span><span class="p">[</span><span class="s2">&quot;event&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;analysis_complete&quot;</span><span class="p">:</span>
+</span><span id="__span-19-8"><a id="__codelineno-19-8" name="__codelineno-19-8" href="#__codelineno-19-8"></a>        <span class="n">result</span> <span class="o">=</span> <span class="n">event</span><span class="p">[</span><span class="s2">&quot;context&quot;</span><span class="p">][</span><span class="s2">&quot;result&quot;</span><span class="p">]</span>
+</span><span id="__span-19-9"><a id="__codelineno-19-9" name="__codelineno-19-9" href="#__codelineno-19-9"></a>        <span class="k">break</span>  <span class="c1"># Analysis done</span>
+</span><span id="__span-19-10"><a id="__codelineno-19-10" name="__codelineno-19-10" href="#__codelineno-19-10"></a>
+</span><span id="__span-19-11"><a id="__codelineno-19-11" name="__codelineno-19-11" href="#__codelineno-19-11"></a>    <span class="k">elif</span> <span class="n">event</span><span class="p">[</span><span class="s2">&quot;event&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;analysis_error&quot;</span><span class="p">:</span>
+</span><span id="__span-19-12"><a id="__codelineno-19-12" name="__codelineno-19-12" href="#__codelineno-19-12"></a>        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error: </span><span class="si">{</span><span class="n">event</span><span class="p">[</span><span class="s1">&#39;context&#39;</span><span class="p">][</span><span class="s1">&#39;message&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span><span id="__span-19-13"><a id="__codelineno-19-13" name="__codelineno-19-13" href="#__codelineno-19-13"></a>        <span class="k">break</span>
 </span></code></pre></div></p>
 </li>
 <li>
 <p><strong>Disconnection:</strong></p>
 </li>
-<li>WebSocket closes automatically after <code>analysis_complete</code> or <code>analysis_error</code></li>
-<li>Client can disconnect early without affecting analysis</li>
+<li>The server keeps the socket open; <strong>the client should close it</strong> after receiving <code>analysis_complete</code> or <code>analysis_error</code>.</li>
+<li>Events are buffered per <code>run_id</code> (up to 200, oldest dropped), so connecting shortly after <code>/start</code> returns does not lose the early events.</li>
+<li>Disconnecting early does not cancel the analysis; the final result is still stored and returned by <code>/v1/analyze/start</code>'s background task.</li>
 </ol>
 <hr />
 <h3 id="example-full-event-stream">Example: Full Event Stream<a class="headerlink" href="#example-full-event-stream" title="Permanent link">&para;</a></h3>
@@ -4668,59 +4867,41 @@ attribute-style access to all results and metadata.</p>
 </span><span id="__span-20-25"><a id="__codelineno-20-25" name="__codelineno-20-25" href="#__codelineno-20-25"></a>            <span class="n">event</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
 </span><span id="__span-20-26"><a id="__codelineno-20-26" name="__codelineno-20-26" href="#__codelineno-20-26"></a>
 </span><span id="__span-20-27"><a id="__codelineno-20-27" name="__codelineno-20-27" href="#__codelineno-20-27"></a>            <span class="c1"># Format event for display</span>
-</span><span id="__span-20-28"><a id="__codelineno-20-28" name="__codelineno-20-28" href="#__codelineno-20-28"></a>            <span class="n">timestamp</span> <span class="o">=</span> <span class="n">event</span><span class="p">[</span><span class="s2">&quot;timestamp&quot;</span><span class="p">]</span>
-</span><span id="__span-20-29"><a id="__codelineno-20-29" name="__codelineno-20-29" href="#__codelineno-20-29"></a>            <span class="n">event_type</span> <span class="o">=</span> <span class="n">event</span><span class="p">[</span><span class="s2">&quot;event&quot;</span><span class="p">]</span>
-</span><span id="__span-20-30"><a id="__codelineno-20-30" name="__codelineno-20-30" href="#__codelineno-20-30"></a>            <span class="n">level</span> <span class="o">=</span> <span class="n">event</span><span class="p">[</span><span class="s2">&quot;level&quot;</span><span class="p">]</span>
-</span><span id="__span-20-31"><a id="__codelineno-20-31" name="__codelineno-20-31" href="#__codelineno-20-31"></a>            <span class="n">msg</span> <span class="o">=</span> <span class="n">event</span><span class="p">[</span><span class="s2">&quot;context&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;message&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
-</span><span id="__span-20-32"><a id="__codelineno-20-32" name="__codelineno-20-32" href="#__codelineno-20-32"></a>
-</span><span id="__span-20-33"><a id="__codelineno-20-33" name="__codelineno-20-33" href="#__codelineno-20-33"></a>            <span class="c1"># Pretty print based on event type</span>
-</span><span id="__span-20-34"><a id="__codelineno-20-34" name="__codelineno-20-34" href="#__codelineno-20-34"></a>            <span class="k">if</span> <span class="n">event_type</span> <span class="o">==</span> <span class="s2">&quot;workflow_start&quot;</span><span class="p">:</span>
-</span><span id="__span-20-35"><a id="__codelineno-20-35" name="__codelineno-20-35" href="#__codelineno-20-35"></a>                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;🚀 [</span><span class="si">{</span><span class="n">level</span><span class="si">}</span><span class="s2">] Workflow started: </span><span class="si">{</span><span class="n">msg</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-</span><span id="__span-20-36"><a id="__codelineno-20-36" name="__codelineno-20-36" href="#__codelineno-20-36"></a>
-</span><span id="__span-20-37"><a id="__codelineno-20-37" name="__codelineno-20-37" href="#__codelineno-20-37"></a>            <span class="k">elif</span> <span class="n">event_type</span> <span class="o">==</span> <span class="s2">&quot;phase_transition&quot;</span><span class="p">:</span>
-</span><span id="__span-20-38"><a id="__codelineno-20-38" name="__codelineno-20-38" href="#__codelineno-20-38"></a>                <span class="n">phase</span> <span class="o">=</span> <span class="n">event</span><span class="p">[</span><span class="s2">&quot;context&quot;</span><span class="p">][</span><span class="s2">&quot;to_phase&quot;</span><span class="p">]</span>
-</span><span id="__span-20-39"><a id="__codelineno-20-39" name="__codelineno-20-39" href="#__codelineno-20-39"></a>                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;📍 [</span><span class="si">{</span><span class="n">level</span><span class="si">}</span><span class="s2">] Phase: </span><span class="si">{</span><span class="n">phase</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-</span><span id="__span-20-40"><a id="__codelineno-20-40" name="__codelineno-20-40" href="#__codelineno-20-40"></a>
-</span><span id="__span-20-41"><a id="__codelineno-20-41" name="__codelineno-20-41" href="#__codelineno-20-41"></a>            <span class="k">elif</span> <span class="n">event_type</span> <span class="o">==</span> <span class="s2">&quot;tool_call_start&quot;</span><span class="p">:</span>
-</span><span id="__span-20-42"><a id="__codelineno-20-42" name="__codelineno-20-42" href="#__codelineno-20-42"></a>                <span class="n">tool</span> <span class="o">=</span> <span class="n">event</span><span class="p">[</span><span class="s2">&quot;context&quot;</span><span class="p">][</span><span class="s2">&quot;tool_name&quot;</span><span class="p">]</span>
-</span><span id="__span-20-43"><a id="__codelineno-20-43" name="__codelineno-20-43" href="#__codelineno-20-43"></a>                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;🔧 [</span><span class="si">{</span><span class="n">level</span><span class="si">}</span><span class="s2">] Running tool: </span><span class="si">{</span><span class="n">tool</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-</span><span id="__span-20-44"><a id="__codelineno-20-44" name="__codelineno-20-44" href="#__codelineno-20-44"></a>
-</span><span id="__span-20-45"><a id="__codelineno-20-45" name="__codelineno-20-45" href="#__codelineno-20-45"></a>            <span class="k">elif</span> <span class="n">event_type</span> <span class="o">==</span> <span class="s2">&quot;tool_call_end&quot;</span><span class="p">:</span>
-</span><span id="__span-20-46"><a id="__codelineno-20-46" name="__codelineno-20-46" href="#__codelineno-20-46"></a>                <span class="n">tool</span> <span class="o">=</span> <span class="n">event</span><span class="p">[</span><span class="s2">&quot;context&quot;</span><span class="p">][</span><span class="s2">&quot;tool_name&quot;</span><span class="p">]</span>
-</span><span id="__span-20-47"><a id="__codelineno-20-47" name="__codelineno-20-47" href="#__codelineno-20-47"></a>                <span class="n">duration</span> <span class="o">=</span> <span class="n">event</span><span class="p">[</span><span class="s2">&quot;context&quot;</span><span class="p">][</span><span class="s2">&quot;duration_ms&quot;</span><span class="p">]</span>
-</span><span id="__span-20-48"><a id="__codelineno-20-48" name="__codelineno-20-48" href="#__codelineno-20-48"></a>                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;✅ [</span><span class="si">{</span><span class="n">level</span><span class="si">}</span><span class="s2">] </span><span class="si">{</span><span class="n">tool</span><span class="si">}</span><span class="s2"> completed (</span><span class="si">{</span><span class="n">duration</span><span class="si">}</span><span class="s2">ms)&quot;</span><span class="p">)</span>
-</span><span id="__span-20-49"><a id="__codelineno-20-49" name="__codelineno-20-49" href="#__codelineno-20-49"></a>
-</span><span id="__span-20-50"><a id="__codelineno-20-50" name="__codelineno-20-50" href="#__codelineno-20-50"></a>            <span class="k">elif</span> <span class="n">event_type</span> <span class="o">==</span> <span class="s2">&quot;llm_call_start&quot;</span><span class="p">:</span>
-</span><span id="__span-20-51"><a id="__codelineno-20-51" name="__codelineno-20-51" href="#__codelineno-20-51"></a>                <span class="n">model</span> <span class="o">=</span> <span class="n">event</span><span class="p">[</span><span class="s2">&quot;context&quot;</span><span class="p">][</span><span class="s2">&quot;model&quot;</span><span class="p">]</span>
-</span><span id="__span-20-52"><a id="__codelineno-20-52" name="__codelineno-20-52" href="#__codelineno-20-52"></a>                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;🤖 [</span><span class="si">{</span><span class="n">level</span><span class="si">}</span><span class="s2">] LLM call: </span><span class="si">{</span><span class="n">model</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-</span><span id="__span-20-53"><a id="__codelineno-20-53" name="__codelineno-20-53" href="#__codelineno-20-53"></a>
-</span><span id="__span-20-54"><a id="__codelineno-20-54" name="__codelineno-20-54" href="#__codelineno-20-54"></a>            <span class="k">elif</span> <span class="n">event_type</span> <span class="o">==</span> <span class="s2">&quot;llm_call_end&quot;</span><span class="p">:</span>
-</span><span id="__span-20-55"><a id="__codelineno-20-55" name="__codelineno-20-55" href="#__codelineno-20-55"></a>                <span class="n">tokens</span> <span class="o">=</span> <span class="n">event</span><span class="p">[</span><span class="s2">&quot;context&quot;</span><span class="p">][</span><span class="s2">&quot;tokens_used&quot;</span><span class="p">]</span>
-</span><span id="__span-20-56"><a id="__codelineno-20-56" name="__codelineno-20-56" href="#__codelineno-20-56"></a>                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;✅ [</span><span class="si">{</span><span class="n">level</span><span class="si">}</span><span class="s2">] LLM response (</span><span class="si">{</span><span class="n">tokens</span><span class="si">}</span><span class="s2"> tokens)&quot;</span><span class="p">)</span>
-</span><span id="__span-20-57"><a id="__codelineno-20-57" name="__codelineno-20-57" href="#__codelineno-20-57"></a>
-</span><span id="__span-20-58"><a id="__codelineno-20-58" name="__codelineno-20-58" href="#__codelineno-20-58"></a>            <span class="k">elif</span> <span class="n">event_type</span> <span class="o">==</span> <span class="s2">&quot;refinement_start&quot;</span><span class="p">:</span>
-</span><span id="__span-20-59"><a id="__codelineno-20-59" name="__codelineno-20-59" href="#__codelineno-20-59"></a>                <span class="n">iteration</span> <span class="o">=</span> <span class="n">event</span><span class="p">[</span><span class="s2">&quot;context&quot;</span><span class="p">][</span><span class="s2">&quot;iteration_number&quot;</span><span class="p">]</span>
-</span><span id="__span-20-60"><a id="__codelineno-20-60" name="__codelineno-20-60" href="#__codelineno-20-60"></a>                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;🔄 [</span><span class="si">{</span><span class="n">level</span><span class="si">}</span><span class="s2">] Refinement iteration </span><span class="si">{</span><span class="n">iteration</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-</span><span id="__span-20-61"><a id="__codelineno-20-61" name="__codelineno-20-61" href="#__codelineno-20-61"></a>
-</span><span id="__span-20-62"><a id="__codelineno-20-62" name="__codelineno-20-62" href="#__codelineno-20-62"></a>            <span class="k">elif</span> <span class="n">event_type</span> <span class="o">==</span> <span class="s2">&quot;analysis_complete&quot;</span><span class="p">:</span>
-</span><span id="__span-20-63"><a id="__codelineno-20-63" name="__codelineno-20-63" href="#__codelineno-20-63"></a>                <span class="n">result</span> <span class="o">=</span> <span class="n">event</span><span class="p">[</span><span class="s2">&quot;context&quot;</span><span class="p">][</span><span class="s2">&quot;result&quot;</span><span class="p">]</span>
-</span><span id="__span-20-64"><a id="__codelineno-20-64" name="__codelineno-20-64" href="#__codelineno-20-64"></a>                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">✅ [</span><span class="si">{</span><span class="n">level</span><span class="si">}</span><span class="s2">] Analysis complete!&quot;</span><span class="p">)</span>
-</span><span id="__span-20-65"><a id="__codelineno-20-65" name="__codelineno-20-65" href="#__codelineno-20-65"></a>                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Bias detected: </span><span class="si">{</span><span class="n">result</span><span class="p">[</span><span class="s1">&#39;bias_result&#39;</span><span class="p">][</span><span class="s1">&#39;bias_detected&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-</span><span id="__span-20-66"><a id="__codelineno-20-66" name="__codelineno-20-66" href="#__codelineno-20-66"></a>                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Risk level: </span><span class="si">{</span><span class="n">result</span><span class="p">[</span><span class="s1">&#39;bias_result&#39;</span><span class="p">][</span><span class="s1">&#39;risk_level&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-</span><span id="__span-20-67"><a id="__codelineno-20-67" name="__codelineno-20-67" href="#__codelineno-20-67"></a>                <span class="k">break</span>
-</span><span id="__span-20-68"><a id="__codelineno-20-68" name="__codelineno-20-68" href="#__codelineno-20-68"></a>
-</span><span id="__span-20-69"><a id="__codelineno-20-69" name="__codelineno-20-69" href="#__codelineno-20-69"></a>            <span class="k">elif</span> <span class="n">event_type</span> <span class="o">==</span> <span class="s2">&quot;analysis_error&quot;</span><span class="p">:</span>
-</span><span id="__span-20-70"><a id="__codelineno-20-70" name="__codelineno-20-70" href="#__codelineno-20-70"></a>                <span class="n">error</span> <span class="o">=</span> <span class="n">event</span><span class="p">[</span><span class="s2">&quot;context&quot;</span><span class="p">][</span><span class="s2">&quot;error_message&quot;</span><span class="p">]</span>
-</span><span id="__span-20-71"><a id="__codelineno-20-71" name="__codelineno-20-71" href="#__codelineno-20-71"></a>                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">❌ [</span><span class="si">{</span><span class="n">level</span><span class="si">}</span><span class="s2">] Analysis failed: </span><span class="si">{</span><span class="n">error</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-</span><span id="__span-20-72"><a id="__codelineno-20-72" name="__codelineno-20-72" href="#__codelineno-20-72"></a>                <span class="k">break</span>
-</span><span id="__span-20-73"><a id="__codelineno-20-73" name="__codelineno-20-73" href="#__codelineno-20-73"></a>
-</span><span id="__span-20-74"><a id="__codelineno-20-74" name="__codelineno-20-74" href="#__codelineno-20-74"></a>            <span class="k">else</span><span class="p">:</span>
-</span><span id="__span-20-75"><a id="__codelineno-20-75" name="__codelineno-20-75" href="#__codelineno-20-75"></a>                <span class="c1"># Generic event</span>
-</span><span id="__span-20-76"><a id="__codelineno-20-76" name="__codelineno-20-76" href="#__codelineno-20-76"></a>                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;📋 [</span><span class="si">{</span><span class="n">level</span><span class="si">}</span><span class="s2">] </span><span class="si">{</span><span class="n">event_type</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">msg</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-</span><span id="__span-20-77"><a id="__codelineno-20-77" name="__codelineno-20-77" href="#__codelineno-20-77"></a>
-</span><span id="__span-20-78"><a id="__codelineno-20-78" name="__codelineno-20-78" href="#__codelineno-20-78"></a>
-</span><span id="__span-20-79"><a id="__codelineno-20-79" name="__codelineno-20-79" href="#__codelineno-20-79"></a><span class="c1"># Run the streaming example</span>
-</span><span id="__span-20-80"><a id="__codelineno-20-80" name="__codelineno-20-80" href="#__codelineno-20-80"></a><span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">stream_analysis</span><span class="p">())</span>
+</span><span id="__span-20-28"><a id="__codelineno-20-28" name="__codelineno-20-28" href="#__codelineno-20-28"></a>            <span class="n">event_type</span> <span class="o">=</span> <span class="n">event</span><span class="p">[</span><span class="s2">&quot;event&quot;</span><span class="p">]</span>
+</span><span id="__span-20-29"><a id="__codelineno-20-29" name="__codelineno-20-29" href="#__codelineno-20-29"></a>            <span class="n">level</span> <span class="o">=</span> <span class="n">event</span><span class="p">[</span><span class="s2">&quot;level&quot;</span><span class="p">]</span>
+</span><span id="__span-20-30"><a id="__codelineno-20-30" name="__codelineno-20-30" href="#__codelineno-20-30"></a>            <span class="n">ctx</span> <span class="o">=</span> <span class="n">event</span><span class="p">[</span><span class="s2">&quot;context&quot;</span><span class="p">]</span>
+</span><span id="__span-20-31"><a id="__codelineno-20-31" name="__codelineno-20-31" href="#__codelineno-20-31"></a>
+</span><span id="__span-20-32"><a id="__codelineno-20-32" name="__codelineno-20-32" href="#__codelineno-20-32"></a>            <span class="c1"># Pretty print based on event type</span>
+</span><span id="__span-20-33"><a id="__codelineno-20-33" name="__codelineno-20-33" href="#__codelineno-20-33"></a>            <span class="k">if</span> <span class="n">event_type</span> <span class="o">==</span> <span class="s2">&quot;orchestrator_plan_start&quot;</span><span class="p">:</span>
+</span><span id="__span-20-34"><a id="__codelineno-20-34" name="__codelineno-20-34" href="#__codelineno-20-34"></a>                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;🧭 [</span><span class="si">{</span><span class="n">level</span><span class="si">}</span><span class="s2">] Planning (</span><span class="si">{</span><span class="n">ctx</span><span class="p">[</span><span class="s1">&#39;input_type&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
+</span><span id="__span-20-35"><a id="__codelineno-20-35" name="__codelineno-20-35" href="#__codelineno-20-35"></a>
+</span><span id="__span-20-36"><a id="__codelineno-20-36" name="__codelineno-20-36" href="#__codelineno-20-36"></a>            <span class="k">elif</span> <span class="n">event_type</span> <span class="o">==</span> <span class="s2">&quot;orchestrator_execute_start&quot;</span><span class="p">:</span>
+</span><span id="__span-20-37"><a id="__codelineno-20-37" name="__codelineno-20-37" href="#__codelineno-20-37"></a>                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;🚀 [</span><span class="si">{</span><span class="n">level</span><span class="si">}</span><span class="s2">] Executing workflow: </span><span class="si">{</span><span class="n">ctx</span><span class="p">[</span><span class="s1">&#39;workflow_id&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span><span id="__span-20-38"><a id="__codelineno-20-38" name="__codelineno-20-38" href="#__codelineno-20-38"></a>
+</span><span id="__span-20-39"><a id="__codelineno-20-39" name="__codelineno-20-39" href="#__codelineno-20-39"></a>            <span class="k">elif</span> <span class="n">event_type</span> <span class="o">==</span> <span class="s2">&quot;orchestrator_refine_start&quot;</span><span class="p">:</span>
+</span><span id="__span-20-40"><a id="__codelineno-20-40" name="__codelineno-20-40" href="#__codelineno-20-40"></a>                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;🔄 [</span><span class="si">{</span><span class="n">level</span><span class="si">}</span><span class="s2">] Refinement pass </span><span class="si">{</span><span class="n">ctx</span><span class="p">[</span><span class="s1">&#39;current_refinement_count&#39;</span><span class="p">]</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span><span id="__span-20-41"><a id="__codelineno-20-41" name="__codelineno-20-41" href="#__codelineno-20-41"></a>
+</span><span id="__span-20-42"><a id="__codelineno-20-42" name="__codelineno-20-42" href="#__codelineno-20-42"></a>            <span class="k">elif</span> <span class="n">event_type</span> <span class="o">==</span> <span class="s2">&quot;analysis_complete&quot;</span><span class="p">:</span>
+</span><span id="__span-20-43"><a id="__codelineno-20-43" name="__codelineno-20-43" href="#__codelineno-20-43"></a>                <span class="n">result</span> <span class="o">=</span> <span class="n">ctx</span><span class="p">[</span><span class="s2">&quot;result&quot;</span><span class="p">]</span>
+</span><span id="__span-20-44"><a id="__codelineno-20-44" name="__codelineno-20-44" href="#__codelineno-20-44"></a>                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">✅ [</span><span class="si">{</span><span class="n">level</span><span class="si">}</span><span class="s2">] Analysis complete!&quot;</span><span class="p">)</span>
+</span><span id="__span-20-45"><a id="__codelineno-20-45" name="__codelineno-20-45" href="#__codelineno-20-45"></a>                <span class="k">if</span> <span class="n">result</span><span class="p">[</span><span class="s2">&quot;bias_result&quot;</span><span class="p">]:</span>
+</span><span id="__span-20-46"><a id="__codelineno-20-46" name="__codelineno-20-46" href="#__codelineno-20-46"></a>                    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Bias detected: </span><span class="si">{</span><span class="n">result</span><span class="p">[</span><span class="s1">&#39;bias_result&#39;</span><span class="p">][</span><span class="s1">&#39;bias_detected&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span><span id="__span-20-47"><a id="__codelineno-20-47" name="__codelineno-20-47" href="#__codelineno-20-47"></a>                    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Risk level: </span><span class="si">{</span><span class="n">result</span><span class="p">[</span><span class="s1">&#39;bias_result&#39;</span><span class="p">][</span><span class="s1">&#39;risk_level&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span><span id="__span-20-48"><a id="__codelineno-20-48" name="__codelineno-20-48" href="#__codelineno-20-48"></a>                <span class="k">else</span><span class="p">:</span>
+</span><span id="__span-20-49"><a id="__codelineno-20-49" name="__codelineno-20-49" href="#__codelineno-20-49"></a>                    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Risks found: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">result</span><span class="p">[</span><span class="s1">&#39;risk_result&#39;</span><span class="p">][</span><span class="s1">&#39;risks&#39;</span><span class="p">])</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span><span id="__span-20-50"><a id="__codelineno-20-50" name="__codelineno-20-50" href="#__codelineno-20-50"></a>                <span class="k">break</span>
+</span><span id="__span-20-51"><a id="__codelineno-20-51" name="__codelineno-20-51" href="#__codelineno-20-51"></a>
+</span><span id="__span-20-52"><a id="__codelineno-20-52" name="__codelineno-20-52" href="#__codelineno-20-52"></a>            <span class="k">elif</span> <span class="n">event_type</span> <span class="o">==</span> <span class="s2">&quot;analysis_error&quot;</span><span class="p">:</span>
+</span><span id="__span-20-53"><a id="__codelineno-20-53" name="__codelineno-20-53" href="#__codelineno-20-53"></a>                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">❌ [</span><span class="si">{</span><span class="n">level</span><span class="si">}</span><span class="s2">] Analysis failed: </span><span class="si">{</span><span class="n">ctx</span><span class="p">[</span><span class="s1">&#39;message&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span><span id="__span-20-54"><a id="__codelineno-20-54" name="__codelineno-20-54" href="#__codelineno-20-54"></a>                <span class="k">break</span>
+</span><span id="__span-20-55"><a id="__codelineno-20-55" name="__codelineno-20-55" href="#__codelineno-20-55"></a>
+</span><span id="__span-20-56"><a id="__codelineno-20-56" name="__codelineno-20-56" href="#__codelineno-20-56"></a>            <span class="k">else</span><span class="p">:</span>
+</span><span id="__span-20-57"><a id="__codelineno-20-57" name="__codelineno-20-57" href="#__codelineno-20-57"></a>                <span class="c1"># Node-level event (bias_text_analyze_start, risk_embed_start, ...)</span>
+</span><span id="__span-20-58"><a id="__codelineno-20-58" name="__codelineno-20-58" href="#__codelineno-20-58"></a>                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;📋 [</span><span class="si">{</span><span class="n">level</span><span class="si">}</span><span class="s2">] </span><span class="si">{</span><span class="n">event_type</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">ctx</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span><span id="__span-20-59"><a id="__codelineno-20-59" name="__codelineno-20-59" href="#__codelineno-20-59"></a>
+</span><span id="__span-20-60"><a id="__codelineno-20-60" name="__codelineno-20-60" href="#__codelineno-20-60"></a>
+</span><span id="__span-20-61"><a id="__codelineno-20-61" name="__codelineno-20-61" href="#__codelineno-20-61"></a><span class="c1"># Run the streaming example</span>
+</span><span id="__span-20-62"><a id="__codelineno-20-62" name="__codelineno-20-62" href="#__codelineno-20-62"></a><span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">stream_analysis</span><span class="p">())</span>
 </span></code></pre></div>
 <p><strong>Example Output:</strong>
 <div class="language-text highlight"><pre><span></span><code><span id="__span-21-1"><a id="__codelineno-21-1" name="__codelineno-21-1" href="#__codelineno-21-1"></a>Started analysis: a1b2c3d4-5678-90ab-cdef-1234567890ab
@@ -4765,11 +4946,10 @@ attribute-style access to all results and metadata.</p>
 </span><span id="__span-23-4"><a id="__codelineno-23-4" name="__codelineno-23-4" href="#__codelineno-23-4"></a><span class="w">  </span><span class="nt">&quot;event&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;analysis_error&quot;</span><span class="p">,</span>
 </span><span id="__span-23-5"><a id="__codelineno-23-5" name="__codelineno-23-5" href="#__codelineno-23-5"></a><span class="w">  </span><span class="nt">&quot;level&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;error&quot;</span><span class="p">,</span>
 </span><span id="__span-23-6"><a id="__codelineno-23-6" name="__codelineno-23-6" href="#__codelineno-23-6"></a><span class="w">  </span><span class="nt">&quot;context&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-23-7"><a id="__codelineno-23-7" name="__codelineno-23-7" href="#__codelineno-23-7"></a><span class="w">    </span><span class="nt">&quot;message&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Analysis failed: Tool execution error&quot;</span><span class="p">,</span>
-</span><span id="__span-23-8"><a id="__codelineno-23-8" name="__codelineno-23-8" href="#__codelineno-23-8"></a><span class="w">    </span><span class="nt">&quot;error_type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;ToolExecutionError&quot;</span><span class="p">,</span>
-</span><span id="__span-23-9"><a id="__codelineno-23-9" name="__codelineno-23-9" href="#__codelineno-23-9"></a><span class="w">    </span><span class="nt">&quot;error_message&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;OCR tool failed: Tesseract not found&quot;</span>
-</span><span id="__span-23-10"><a id="__codelineno-23-10" name="__codelineno-23-10" href="#__codelineno-23-10"></a><span class="w">  </span><span class="p">}</span>
-</span><span id="__span-23-11"><a id="__codelineno-23-11" name="__codelineno-23-11" href="#__codelineno-23-11"></a><span class="p">}</span>
+</span><span id="__span-23-7"><a id="__codelineno-23-7" name="__codelineno-23-7" href="#__codelineno-23-7"></a><span class="w">    </span><span class="nt">&quot;message&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Analysis failed: OCR tool failed: Tesseract not found&quot;</span><span class="p">,</span>
+</span><span id="__span-23-8"><a id="__codelineno-23-8" name="__codelineno-23-8" href="#__codelineno-23-8"></a><span class="w">    </span><span class="nt">&quot;error_type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;ToolExecutionError&quot;</span>
+</span><span id="__span-23-9"><a id="__codelineno-23-9" name="__codelineno-23-9" href="#__codelineno-23-9"></a><span class="w">  </span><span class="p">}</span>
+</span><span id="__span-23-10"><a id="__codelineno-23-10" name="__codelineno-23-10" href="#__codelineno-23-10"></a><span class="p">}</span>
 </span></code></pre></div>
 <hr />
 <h2 id="api-usage-examples">API Usage Examples<a class="headerlink" href="#api-usage-examples" title="Permanent link">&para;</a></h2>

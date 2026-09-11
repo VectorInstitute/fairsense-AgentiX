@@ -1059,10 +1059,19 @@
 <li>Wait for both services to be ready (health checks)</li>
 <li>Gracefully shutdown on Ctrl+C</li>
 </ul>
+<div class="admonition note">
+<p class="admonition-title">Source checkout vs. <code>pip install</code></p>
+<p>The React UI lives in <code>ui/</code> in the git repository and is <strong>not</strong> included in the PyPI wheel. From a <code>pip install fairsense-agentix</code> environment, <code>server.start()</code> runs the backend only (it prints a notice and the API docs URL); to use the web UI, clone the repository and install Node.js. <code>server.start(ui=False)</code> requests backend-only mode explicitly.</p>
+</div>
+<p>Options: <code>port</code>, <code>ui_port</code>, <code>open_browser</code>, <code>verbose</code>, <code>reload</code>, <code>ui</code>, <code>frontend_timeout</code> (seconds to wait for Vite; default 60).</p>
 <hr />
 <h2 id="manual-startup">Manual Startup<a class="headerlink" href="#manual-startup" title="Permanent link">&para;</a></h2>
 <h3 id="backend-only">Backend only<a class="headerlink" href="#backend-only" title="Permanent link">&para;</a></h3>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>uv<span class="w"> </span>run<span class="w"> </span>uvicorn<span class="w"> </span>fairsense_agentix.service_api.server:app<span class="w"> </span>--reload
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="c1"># Reads FAIRSENSE_API_HOST / FAIRSENSE_API_PORT / FAIRSENSE_API_RELOAD from the environment</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>python<span class="w"> </span>-m<span class="w"> </span>fairsense_agentix.service_api
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="c1"># Or with uvicorn directly (note: uvicorn ignores FAIRSENSE_API_HOST/PORT — pass them here)</span>
+</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>uv<span class="w"> </span>run<span class="w"> </span>uvicorn<span class="w"> </span>fairsense_agentix.service_api.server:app<span class="w"> </span>--host<span class="w"> </span><span class="m">127</span>.0.0.1<span class="w"> </span>--port<span class="w"> </span><span class="m">8000</span><span class="w"> </span>--reload
 </span></code></pre></div>
 <p>API docs: <a href="http://localhost:8000/docs">http://localhost:8000/docs</a></p>
 <h3 id="react-ui-after-backend-is-running">React UI (after backend is running)<a class="headerlink" href="#react-ui-after-backend-is-running" title="Permanent link">&para;</a></h3>
