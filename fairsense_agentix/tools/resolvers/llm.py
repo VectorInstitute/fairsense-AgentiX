@@ -55,6 +55,7 @@ def _build_openai_tool(settings: Settings) -> LLMTool:
         base_model = ChatOpenAI(
             model=settings.llm_model_name,
             api_key=SecretStr(settings.llm_api_key) if settings.llm_api_key else None,
+            base_url=settings.llm_base_url,  # None -> api.openai.com
             callbacks=[callback],
         )
 

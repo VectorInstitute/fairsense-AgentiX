@@ -106,6 +106,14 @@ source .venv/bin/activate
 
 ### Your First Analysis
 
+!!! warning "Configure a real LLM provider first"
+    The default `FAIRSENSE_LLM_PROVIDER` is `fake`, which lets the package import and the test suite run without an API key. In that mode `FairSense()` still "works" but every result is a **synthetic placeholder**, not a real analysis. FairSense flags this in three places: a `MockProviderWarning` at construction, `result.metadata.mock_mode == True`, and a `MOCK MODE` entry at the top of `result.warnings`. Set a real provider before running the examples below:
+
+    ```bash
+    export FAIRSENSE_LLM_PROVIDER=openai        # or: anthropic
+    export FAIRSENSE_LLM_API_KEY=sk-...
+    ```
+
 ```python
 from fairsense_agentix import FairSense
 
@@ -128,12 +136,12 @@ for instance in (result.bias_instances or []):
 The easiest way to get started is with the integrated web interface:
 
 ```python
-# Launch both backend and frontend
+# Launch both backend and frontend (from a source checkout with Node.js installed)
 from fairsense_agentix import server
 server.start()
 ```
 
-Or use an example script:
+From a `pip install`, the web UI is not included; `server.start()` then runs the backend only — see the [Server Guide](server.md). Or use an example script:
 ```bash
 python examples/launch_server.py
 ```

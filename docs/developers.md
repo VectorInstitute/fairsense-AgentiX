@@ -81,6 +81,7 @@ fairsense-agentix/
 │   │   ├── telemetry.py            # Event streaming
 │   │   └── event_bus.py            # WebSocket event bus
 │   ├── service_api/            # FastAPI backend
+│   │   ├── __main__.py             # `python -m fairsense_agentix.service_api` (uvicorn + settings)
 │   │   ├── server.py               # App factory: lifespan, middleware, router includes
 │   │   ├── app_state.py            # Shared runtime state (engine, event_bus, locks)
 │   │   ├── helpers.py              # run_analysis, run_analysis_background
@@ -97,10 +98,7 @@ fairsense-agentix/
 │   │   │   ├── health.py               # HTTP health-check polling
 │   │   │   ├── processes.py            # start_backend, start_frontend, kill_port
 │   │   │   └── core.py                 # ServerLauncher orchestrator + start()
-│   │   ├── launcher_ports.py       # Port helpers and listener cleanup
-│   │   ├── launcher_health.py      # Backend/frontend readiness waits
-│   │   ├── launcher_processes.py   # Spawn backend/frontend subprocesses
-│   │   └── launcher_troubleshooting.py  # Troubleshooting log helpers
+│   │   └── README.md               # Launcher usage notes
 │   ├── prompts/                # LLM prompt templates
 │   │   ├── prompt_loader.py        # Template loading
 │   │   └── templates/              # .txt files with Jinja2 templates

@@ -13,7 +13,9 @@ Usage:
 import argparse
 import json
 import statistics
+import sys
 import time
+from collections.abc import Callable
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -109,22 +111,25 @@ our board of directors.""",
     }
 
 
+FIXTURE_IMAGES = Path(__file__).parent.parent / "fixtures" / "bias_images"
+
+
 def get_bias_image_inputs() -> dict[str, dict[str, Any]]:
-    """Get bias image benchmark inputs of varying sizes."""
-    # For benchmarking, use fake image bytes of different sizes
+    """Get bias image benchmark inputs of varying sizes.
+
+    Uses the real JPEG fixtures from the test suite (ordered by file size) so
+    that OCR/caption/VLM tools receive decodable images. Random bytes would fail
+    to decode on every iteration and leave the whole group without results.
+    """
+    images = sorted(FIXTURE_IMAGES.glob("*.jpg"), key=lambda p: p.stat().st_size)
+    if len(images) < 3:
+        raise FileNotFoundError(
+            f"Expected >= 3 JPEG fixtures in {FIXTURE_IMAGES}, found {len(images)}",
+        )
     return {
-        "small": {
-            "image_bytes": b"fake_image_data_small" * 100,  # ~2KB
-            "options": {},
-        },
-        "medium": {
-            "image_bytes": b"fake_image_data_medium" * 10000,  # ~200KB
-            "options": {},
-        },
-        "large": {
-            "image_bytes": b"fake_image_data_large" * 100000,  # ~2MB
-            "options": {},
-        },
+        "small": {"image_bytes": images[0].read_bytes(), "options": {}},
+        "medium": {"image_bytes": images[len(images) // 2].read_bytes(), "options": {}},
+        "large": {"image_bytes": images[-1].read_bytes(), "options": {}},
     }
 
 
@@ -240,9 +245,82 @@ def calculate_percentiles(values: list[float]) -> dict[str, float]:
     }
 
 
+def result_error(graph_name: str, result: Any) -> str | None:
+    """Return a description of an internal failure carried by a graph result.
+
+    The orchestrator catches workflow exceptions and reports them through
+    ``final_result["status"]`` / ``["errors"]`` instead of raising, so a
+    successful ``invoke`` is not proof that the analysis succeeded.
+    """
+    if not isinstance(result, dict):
+        return f"unexpected result type {type(result).__name__}"
+
+    if graph_name == "orchestrator":
+        final = result.get("final_result")
+        if not final:
+            return "no final_result in orchestrator output"
+        if final.get("status") != "success" or final.get("errors"):
+            errors = final.get("errors") or ["<no error message>"]
+            return f"status={final.get('status')!r}: {errors[0]}"
+        return None
+
+    if result.get("errors"):
+        return str(result["errors"][0])
+    return None
+
+
+def run_iterations(
+    graph: Any,
+    graph_name: str,
+    input_data: dict[str, Any],
+    iterations: int,
+) -> tuple[list[float], list[float], int, str | None]:
+    """Invoke ``graph`` repeatedly and collect timings and memory deltas.
+
+    An iteration counts as failed if ``invoke`` raises *or* the returned result
+    carries a failure (see :func:`result_error`).
+
+    Returns
+    -------
+    tuple
+        ``(timings_seconds, memory_delta_mb, error_count, first_error_message)``
+    """
+    timings: list[float] = []
+    memory_delta: list[float] = []
+    errors = 0
+    first_error: str | None = None
+
+    for i in range(iterations):
+        try:
+            mem_before = measure_memory()
+
+            start_time = time.perf_counter()
+            result = graph.invoke(input_data)
+            duration = time.perf_counter() - start_time
+
+            # A returned result can still carry a failure (e.g. the orchestrator
+            # reports workflow errors via status/errors instead of raising).
+            internal_error = result_error(graph_name, result)
+            if internal_error is not None:
+                raise RuntimeError(f"graph reported failure: {internal_error}")
+
+            timings.append(duration)
+            memory_delta.append(measure_memory() - mem_before)
+
+            if (i + 1) % max(1, iterations // 10) == 0:
+                print(f"    Progress: {i + 1}/{iterations} ({duration:.3f}s)")
+
+        except Exception as e:
+            errors += 1
+            first_error = first_error or str(e)
+            print(f"    Error in iteration {i + 1}: {e}")
+
+    return timings, memory_delta, errors, first_error
+
+
 def benchmark_graph(
     graph_name: str,
-    create_graph_fn: callable,
+    create_graph_fn: Callable[[], Any],
     inputs: dict[str, dict[str, Any]],
     iterations: int,
 ) -> dict[str, Any]:
@@ -252,7 +330,7 @@ def benchmark_graph(
     ----------
     graph_name : str
         Name of the graph being benchmarked
-    create_graph_fn : callable
+    create_graph_fn : Callable[[], Any]
         Function to create the graph instance
     inputs : dict
         Dictionary of input size -> input data mappings
@@ -268,10 +346,12 @@ def benchmark_graph(
     print(f"Benchmarking: {graph_name}")
     print(f"{'=' * 70}")
 
-    results = {
+    results: dict[str, Any] = {
         "graph_name": graph_name,
         "iterations": iterations,
         "input_sizes": {},
+        "missing_sizes": [],
+        "error_samples": {},
     }
 
     # Create graph once (reuse for all iterations)
@@ -280,44 +360,19 @@ def benchmark_graph(
     for size_name, input_data in inputs.items():
         print(f"\n  Input size: {size_name} ({iterations} iterations)")
 
-        timings = []
-        memory_before = []
-        memory_after = []
-        errors = 0
+        timings, memory_delta, errors, first_error = run_iterations(
+            graph,
+            graph_name,
+            input_data,
+            iterations,
+        )
 
-        for i in range(iterations):
-            try:
-                # Measure memory before
-                mem_before = measure_memory()
-                memory_before.append(mem_before)
-
-                # Time the execution
-                start_time = time.perf_counter()
-                _ = graph.invoke(input_data)  # Result not needed for benchmarking
-                end_time = time.perf_counter()
-
-                duration = end_time - start_time
-                timings.append(duration)
-
-                # Measure memory after
-                mem_after = measure_memory()
-                memory_after.append(mem_after)
-
-                # Progress indicator
-                if (i + 1) % max(1, iterations // 10) == 0:
-                    print(f"    Progress: {i + 1}/{iterations} ({duration:.3f}s)")
-
-            except Exception as e:
-                errors += 1
-                print(f"    Error in iteration {i + 1}: {e}")
+        if first_error is not None:
+            results["error_samples"][size_name] = first_error
 
         # Calculate statistics
         if timings:
             timing_stats = calculate_percentiles(timings)
-            memory_delta = [
-                after - before
-                for before, after in zip(memory_before, memory_after, strict=True)
-            ]
             memory_stats = calculate_percentiles(memory_delta)
 
             results["input_sizes"][size_name] = {
@@ -343,6 +398,7 @@ def benchmark_graph(
             _sr = results["input_sizes"][size_name]["success_rate"]
             print(f"      Success rate: {_sr:.1%}")
         else:
+            results["missing_sizes"].append(size_name)
             print(f"    No successful iterations for {size_name}")
 
     return results
@@ -380,7 +436,7 @@ def run_benchmarks(
     print(f"#   Telemetry enabled: {settings.telemetry_enabled}")
     print(f"{'#' * 70}")
 
-    all_results = {
+    all_results: dict[str, Any] = {
         "timestamp": datetime.now(timezone.utc).isoformat(),
         "configuration": {
             "iterations": iterations,
@@ -393,7 +449,7 @@ def run_benchmarks(
     }
 
     # Benchmark each requested graph
-    graph_configs = {
+    graph_configs: dict[str, tuple[Callable[[], Any], dict[str, dict[str, Any]]]] = {
         "bias_text": (create_bias_text_graph, get_bias_text_inputs()),
         "bias_image": (create_bias_image_graph, get_bias_image_inputs()),
         "risk": (create_risk_graph, get_risk_inputs()),
@@ -407,11 +463,11 @@ def run_benchmarks(
                 },
                 "image": {
                     "input_type": "image",
-                    "content": b"fake_image_bytes" * 1000,
+                    "content": get_bias_image_inputs()["small"]["image_bytes"],
                     "options": {},
                 },
                 "risk": {
-                    "input_type": "risk",
+                    "input_type": "csv",  # orchestrator's name for the risk workflow
                     "content": "AI deployment scenario",
                     "options": {},
                 },
@@ -421,8 +477,10 @@ def run_benchmarks(
 
     for graph_name in graphs_to_benchmark:
         if graph_name not in graph_configs:
-            print(f"\nWarning: Unknown graph '{graph_name}', skipping...")
-            continue
+            raise ValueError(
+                f"Unknown graph '{graph_name}'. "
+                f"Choose from: {', '.join(sorted(graph_configs))}",
+            )
 
         create_fn, inputs = graph_configs[graph_name]
         result = benchmark_graph(graph_name, create_fn, inputs, iterations)
@@ -445,8 +503,39 @@ def run_benchmarks(
 # ============================================================================
 
 
-def main() -> None:
-    """Run benchmark suite from command line."""
+def collect_problems(results: dict[str, Any]) -> list[str]:
+    """List every reason the run should not be considered clean.
+
+    A missing result group (no successful iteration for an input size) or any
+    failed iteration is a problem: percentiles computed from a partial run are
+    misleading, and a graph that returns a failure status is not a success.
+    """
+    problems: list[str] = []
+    for graph_name, graph_results in results["graphs"].items():
+        for size_name in graph_results.get("missing_sizes", []):
+            sample = graph_results.get("error_samples", {}).get(size_name, "")
+            problems.append(
+                f"{graph_name}/{size_name}: no successful iterations ({sample})",
+            )
+        for size_name, size_results in graph_results["input_sizes"].items():
+            if size_results["total_errors"]:
+                sample = graph_results.get("error_samples", {}).get(size_name, "")
+                problems.append(
+                    f"{graph_name}/{size_name}: {size_results['total_errors']}/"
+                    f"{graph_results['iterations']} iterations failed ({sample})",
+                )
+    return problems
+
+
+def main() -> int:
+    """Run benchmark suite from command line.
+
+    Returns
+    -------
+    int
+        Process exit code: 0 when every requested graph/input size completed
+        all iterations successfully, 1 otherwise (unless ``--allow-errors``).
+    """
     parser = argparse.ArgumentParser(
         description="Benchmark FairSense-AgentiX graph performance",
         formatter_class=argparse.RawDescriptionHelpFormatter,
@@ -472,6 +561,15 @@ def main() -> None:
         type=Path,
         default=Path("benchmark_results.json"),
         help="Output file for results (default: benchmark_results.json)",
+    )
+
+    parser.add_argument(
+        "--allow-errors",
+        action="store_true",
+        help=(
+            "Exit 0 even if some iterations failed or result groups are missing "
+            "(problems are still reported). Default: exit 1 on any problem."
+        ),
     )
 
     args = parser.parse_args()
@@ -501,12 +599,33 @@ def main() -> None:
             lp50 = latency["p50"]
             lp95 = latency["p95"]
             lp99 = latency["p99"]
+            errs = size_results["total_errors"]
+            flag = f"  ({errs} failed)" if errs else ""
             print(
-                f"  {size_name:8s}: p50={lp50:.3f}s  p95={lp95:.3f}s  p99={lp99:.3f}s",
+                f"  {size_name:8s}: p50={lp50:.3f}s  p95={lp95:.3f}s  "
+                f"p99={lp99:.3f}s{flag}",
             )
+        for size_name in graph_results.get("missing_sizes", []):
+            print(f"  {size_name:8s}: NO RESULTS (all iterations failed)")
 
-    print("\n" + "=" * 70 + "\n")
+    problems = collect_problems(results)
+    results["problems"] = problems
+    if args.output:
+        with open(args.output, "w") as f:
+            json.dump(results, f, indent=2)
+
+    print("\n" + "=" * 70)
+    if problems:
+        print(f"BENCHMARK INCOMPLETE: {len(problems)} problem(s)")
+        for problem in problems:
+            print(f"  - {problem}")
+        print("=" * 70 + "\n")
+        return 0 if args.allow_errors else 1
+
+    print("BENCHMARK OK: all graphs and input sizes completed without errors")
+    print("=" * 70 + "\n")
+    return 0
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())

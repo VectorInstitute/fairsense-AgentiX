@@ -62,6 +62,7 @@ def _resolve_summarizer_tool(settings: Settings) -> SummarizerTool:
                 api_key=SecretStr(settings.llm_api_key)
                 if settings.llm_api_key
                 else None,
+                base_url=settings.llm_base_url,
             )
             # Add retry (no structured output for summarizer)
             langchain_model = base_model.with_retry(stop_after_attempt=3)

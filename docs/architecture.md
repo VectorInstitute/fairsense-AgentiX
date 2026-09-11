@@ -416,8 +416,8 @@ registry = create_tool_registry(settings)
 | **OCR** | `OCRTool` | Tesseract, PaddleOCR, Fake | Extract text from images |
 | **Caption** | `CaptionTool` | BLIP, BLIP-2, Fake | Generate image descriptions |
 | **VLM** | `VLMTool` | GPT-4V, Claude Vision, Fake | Multimodal reasoning with CoT |
-| **LLM** | `LLMTool` | GPT-4, Claude, Local (Ollama), Fake | Text generation and analysis |
-| **Embedder** | `EmbedderTool` | sentence-transformers, OpenAI, Fake | Text → vector embeddings |
+| **LLM** | `LLMTool` | GPT-4, Claude, any OpenAI-compatible server via `llm_base_url` (Ollama, vLLM), Fake | Text generation and analysis |
+| **Embedder** | `EmbedderTool` | sentence-transformers, Fake | Text → vector embeddings |
 | **FAISS Index** | `FAISSIndexTool` | FAISS (CPU/GPU) | Semantic search over knowledge bases |
 | **Formatter** | `FormatterTool` | HTML/CSV formatter | Output formatting |
 | **Persistence** | `PersistenceTool` | File I/O | Save results to disk |
@@ -519,7 +519,7 @@ class RiskEvaluatorOutput(BaseModel):
 **Location:** `fairsense_agentix/services/telemetry.py`
 
 **Features:**
-- **Event Streaming:** All workflow transitions, tool calls, and LLM calls emit structured events
+- **Event Streaming:** Every orchestrator and workflow node emits a structured `*_start` event; node-level warnings/errors are emitted with the matching `level`
 - **WebSocket Integration:** Real-time events pushed to UI via `/v1/stream/{run_id}`
 - **Performance Tracking:** Timers for every operation (node execution, tool calls, LLM calls)
 - **Context Propagation:** `run_id` tracks execution across all components
@@ -528,15 +528,18 @@ class RiskEvaluatorOutput(BaseModel):
 
 | Event | Triggered By | Context Fields |
 |-------|--------------|----------------|
-| `workflow_start` | Analysis begins | `input_type`, `workflow_id` |
-| `phase_transition` | Node execution | `from_phase`, `to_phase`, `phase_number` |
-| `tool_call_start` | Tool invocation | `tool_name`, `inputs` |
-| `tool_call_end` | Tool completes | `tool_name`, `outputs`, `duration_ms` |
-| `llm_call_start` | LLM request | `model`, `temperature`, `max_tokens` |
-| `llm_call_end` | LLM response | `model`, `tokens_used`, `duration_ms` |
-| `refinement_start` | Refinement iteration begins | `iteration_number`, `reason` |
-| `analysis_complete` | Workflow finishes | `result` (full output) |
-| `analysis_error` | Workflow fails | `error_type`, `error_message` |
+| `orchestrator_plan_start` | Router node begins | `input_type`, `refinement_count` |
+| `orchestrator_preflight_start` | Pre-flight check | `has_plan` |
+| `orchestrator_execute_start` | Subgraph dispatch | `workflow_id` |
+| `bias_text_analyze_start`, `risk_embed_start`, `bias_image_vlm_analyze_start`, … | Each subgraph node | node-specific (e.g. `text_length`, `risk_count`, `model`) |
+| `orchestrator_posthoc_start` | Post-hoc evaluation | `has_result` |
+| `orchestrator_decide_start` | Accept / refine decision | `refinement_count`, `refinement_enabled` |
+| `orchestrator_refine_start` | Refinement pass triggered | `current_refinement_count` |
+| `orchestrator_finalize_start` | Result packaging | `decision`, `refinement_count` |
+| `analysis_complete` | Service layer, on success | `message`, `result` (full `AnalyzeResponse`) |
+| `analysis_error` | Service layer, on failure | `message`, `error_type` |
+
+The complete per-workflow list is in the [API Reference](api.md#event-types).
 
 **WebSocket Example:**
 ```python
@@ -583,19 +586,17 @@ async with websockets.connect(f"ws://localhost:8000/v1/stream/{run_id}") as ws:
 1. Client calls `/v1/analyze/start` → receives `run_id`
 2. Client connects to `/v1/stream/{run_id}` immediately
 3. Backend runs analysis in background, emits events to WebSocket
-4. WebSocket closes after `analysis_complete` or `analysis_error`
+4. Client closes the WebSocket after `analysis_complete` or `analysis_error` (the server keeps it open)
 
 **Event Format:**
 ```json
 {
   "run_id": "abc123...",
   "timestamp": 1234567890.123,
-  "event": "tool_call_start",
+  "event": "bias_image_ocr_start",
   "level": "info",
   "context": {
-    "message": "Running OCR on image",
-    "tool_name": "ocr",
-    "inputs": "..."
+    "image_size": 45760
   }
 }
 ```
